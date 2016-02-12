@@ -1,0 +1,24 @@
+﻿
+@model ICollection<SmartHome.Models.ISensor>
+@{
+// ViewBag.Title = "Home Page";
+}
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Параметр</th>
+            <th>Значение</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        @foreach (var d in Model)
+        {
+            <tr>
+                <td>@d.DisplayName</td>
+                <td>@d.Value</td>
+            </tr>
+        }
+    </tbody>
+</table>

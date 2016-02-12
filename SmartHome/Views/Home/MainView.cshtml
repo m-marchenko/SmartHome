@@ -1,0 +1,47 @@
+﻿@model SmartHome.Models.IRootObject
+@{
+    ViewBag.Title = Model.DisplayName;
+}
+<div class="row">
+
+
+    <div class="panel-group" id="accordion">
+        <div class="panel panel-primary">
+            <div class="panel-heading"><h4>@Model.DisplayName</h4></div>
+        </div>
+
+        @{
+            foreach (var s in Model.All.OfType<SmartHome.Models.ICompositeObject>())
+            {
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">
+                            <a data-toggle="collapse" data-parent="#accordion" href="#@s.Name@s.Id">@s.DisplayName</a>
+                        </h4>
+                    </div>
+                    <div id="@s.Name@s.Id" class="panel-collapse collapse">
+                        <div class="panel-body">
+                            @Html.Partial("CompositeObject", s)
+                        </div>
+                    </div>
+                </div>
+
+            }
+        }
+    </div>
+
+</div>
+
+@section scripts {
+    <script type="text/javascript">
+    $(function () {
+        $("#cobjects").change(function () {
+            //debugger;
+            alert("event=" + "@Model.Id" + " , id=" + $("select option:selected")[0].id);
+
+
+        });
+    });
+
+    </script>
+}
