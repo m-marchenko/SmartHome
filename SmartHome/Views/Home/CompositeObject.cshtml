@@ -3,36 +3,42 @@
 // ViewBag.Title = "Home Page";
 }
 
-<div class="col-xs-11">
-    <div class="tabbable tabs-left">
+
+    <div class="tabbable tabs-top">
         @if (Model.All.OfType<SmartHome.Models.ICompositeObject>().Count() > 0)
         {
             <ul class="nav nav-tabs">
                 @foreach (var cobj in Model.All.OfType<SmartHome.Models.ICompositeObject>())
                 {
-                    <li><a data-toggle="tab" href="#@cobj.Name">@cobj.DisplayName</a></li>
+                    <li>                        
+                            <a data-toggle="tab" href="#@cobj.Name">@cobj.DisplayName</a>
+                            
+                    </li>
                 }
 
                 @if (Model.Sensors.Count > 0)
                 {
-                    <li class="active"><a data-toggle="tab" href="#@Model.Name@Model.Id@Model.Id">Датчики</a></li>
+                    <li class="active">
+                        <a data-toggle="tab" href="#@Model.Name@Model.Id@Model.Id">Датчики</a>                        
+                    </li>
                 }
             </ul>
 
             <div class="tab-content">
                 @foreach (var cobj in Model.All.OfType<SmartHome.Models.ICompositeObject>())
                 {
-                    <div id="@cobj.Name" class="tab-pane fade col-xs-6">
+                    <div id="@cobj.Name" class="tab-pane fade">
                         @Html.Partial("CompositeObject", cobj)
                     </div>
                 }
                 @if (Model.Sensors.Count > 0)
                 {
-                    <div id='@Model.Name@Model.Id@Model.Id' class="tab-pane fade in active col-xs-6">
+                    <div id='@Model.Name@Model.Id@Model.Id' class="tab-pane fade in active">
                         @*<h4>@Model.DisplayName - показания датчиков</h4>*@
                         @Html.Partial("Sensors", Model.Sensors)
                     </div>
                 }
+
 
             </div>
         }
@@ -43,5 +49,17 @@
 
         }
     </div>
-</div>
+        @if (Model is SmartHome.Models.IControlUnit)
+        {
+            <div>
+                @foreach (var cmd in ((SmartHome.Models.IControlUnit)Model).AvailableCommands)
+                {
+                    <button type="button" name="@Model.Id" id="@cmd.Id" class="btn btn-primary">@cmd.DisplayName</button>
+                }
+            </div>
+        }
+    <div class="divider">
+        <hr />
+    </div>
+
 

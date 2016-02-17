@@ -16,7 +16,7 @@
                 <div class="panel panel-default">
                     <div class="panel-heading">
                         <h4 class="panel-title">
-                            <a data-toggle="collapse" data-parent="#accordion" href="#@s.Name@s.Id">@s.DisplayName</a>
+                            <a data-toggle="collapse" data-parent="#accordion" href="#@s.Name@s.Id">@s.DisplayName</a>                                                                                        
                         </h4>
                     </div>
                     <div id="@s.Name@s.Id" class="panel-collapse collapse">
@@ -35,10 +35,29 @@
 @section scripts {
     <script type="text/javascript">
     $(function () {
-        $("#cobjects").change(function () {
-            //debugger;
-            alert("event=" + "@Model.Id" + " , id=" + $("select option:selected")[0].id);
+        $(".btn").click(function () {
+            debugger;
+            //alert("event=" + "@Model.Id" + " , id=" + this.id + " unit=" + this.name);
 
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("SendCommand", "Command")',
+                //url: '/api/Command/' + this.id + "/" + this.name,
+                //url: '/api/Command/' + this.id,
+                //dataType: "json",
+                cache: false,
+                contentType: "application/json",
+                data: "{\"command\":\"" + this.id + "\", \"target\":\"" + this.name + "\" }",
+
+                success: function (data) {
+
+                },
+
+                error: function (data) {
+                    debugger;
+                    alert(data);
+                }
+            });
 
         });
     });

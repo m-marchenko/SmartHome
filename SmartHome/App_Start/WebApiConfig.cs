@@ -19,6 +19,19 @@ namespace SmartHome
                 routeTemplate: "api/{controller}/{id}",
                 defaults: new { id = RouteParameter.Optional }
             );
+
+            config.Routes.MapHttpRoute(
+                name: "CommandApi",
+                routeTemplate: "api/{controller}/{command}/{target}"
+                //defaults: new { id = RouteParameter.Optional }
+            );
+
+            config.Routes.MapHttpRoute(
+                    name: "CommandS",
+                    routeTemplate: "api/{controller}/{sensorId}"
+                    //defaults: new { id = RouteParameter.Optional }
+                    );
+
         }
     }
 }

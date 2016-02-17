@@ -46,21 +46,23 @@ namespace SmartHome.Models
 
         string MeasureUnit { get; }
 
-        string Value { get; }
+        string Value { get; set; }
+
+        DateTime MeasureTime { get; set; }
     }
 
 
     public interface IControlUnit : ICompositeObject
     {
+        List<ICommand> AvailableCommands { get; }
+
         Dictionary<string, string> Settings { get; }
         void ExecuteCommand(ICommand command);
     }
 
 
-    public interface ICommand
+    public interface ICommand : IGenericObject
     {
-        string Name { get; }
-
         bool CanExecute { get; set; }
     }
 
@@ -282,11 +284,25 @@ namespace SmartHome.Models
 
     public class GreenHouse : CompositeObjectBase, IControlUnit
     {
+        private List<ICommand> _commands = new List<ICommand>() {
+            new GenericCommand() { Id = "1",  Name = "OpenDoor", DisplayName = "Открыть дверь" },
+            new GenericCommand() { Id = "2", Name = "CloseDoor", DisplayName = "Закрыть дверь" }
+        };
+
         // ids starting from 50
         public GreenHouse(string id, string name, string displayName)
             : base(id, name, displayName)
         {
         }
+
+        public List<ICommand> AvailableCommands
+        {
+            get
+            {
+                return _commands;
+            }
+        }
+
         public Dictionary<string, string> Settings
         {
             get
@@ -301,13 +317,63 @@ namespace SmartHome.Models
         }
     }
 
-    public class Barrel : CompositeObjectBase
+    public class Barrel : CompositeObjectBase, IControlUnit
     {
+
+        private List<ICommand> _commands = new List<ICommand>() {
+            new GenericCommand() { Id = "3",  Name = "Fill", DisplayName = "Залить" },
+            new GenericCommand() { Id = "4", Name = "Empty", DisplayName = "Слить" }
+        };
+
         public Barrel(string id, string name, string displayName)
             : base(id, name, displayName)
         {
         }
 
+        public List<ICommand> AvailableCommands
+        {
+            get
+            {
+                return _commands;
+            }
+        }
+
+        public Dictionary<string, string> Settings
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public void ExecuteCommand(ICommand command)
+        {
+            throw new NotImplementedException();
+        }
+
+    }
+
+    public class GenericCommand : ICommand
+    {
+        public bool CanExecute
+        {
+            get; set;
+        }
+
+        public string DisplayName
+        {
+            get; set;
+        }
+
+        public string Id
+        {
+            get; set;
+        }
+
+        public string Name
+        {
+            get; set;
+        }
     }
 
     #region Sensors
@@ -315,15 +381,21 @@ namespace SmartHome.Models
     public abstract class SensorBase : GenericObjectBase, ISensor
     {
         protected SensorBase()
-        { }
-
-        protected SensorBase(string id, string name, string displayName) : base(id, name, displayName)
         {
+            
+        }
+
+        protected SensorBase(string id, string name, string displayName)             
+            : base(id, name, displayName)
+        {
+            MeasureTime = DateTime.Now;
         }
 
         public string MeasureUnit { get; protected set; }
         public SensorType SensorType { get; protected set; }
         public string Value { get; set; }
+
+        public DateTime MeasureTime { get; set; }
     }
 
     public class TemperatureSensor : SensorBase
