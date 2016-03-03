@@ -62,7 +62,7 @@ namespace SmartHome.Models
 
 
     public interface ICommand : IGenericObject
-    {
+    {        
         bool CanExecute { get; set; }
     }
 
