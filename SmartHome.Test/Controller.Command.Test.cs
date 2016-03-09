@@ -16,7 +16,7 @@ namespace SmartHome.Test
             {
                 client.Headers.Add("content-type", "application/json");
 
-                var data = "{\"sensorId\":\"101\", \"val\":\"24\"}";
+                var data = "{\"sensorId\":\"t_firstfloor\", \"val\":\"24\"}";
 
                 string response = client.UploadString("http://localhost/SmartHome/Command/SetSensorValue", data);
                 //string response = client.UploadString("http://smart.no-troubles.com/Command/SetSensorValue", data);
@@ -35,9 +35,11 @@ namespace SmartHome.Test
             {
                 client.Headers.Add("content-type", "application/json");
 
-                //var data = "{\"target\":\"60\"}";
+                var data = "{\"target\":\"barrel1_parnik1\"}";
 
-                string response = client.DownloadString("http://localhost/SmartHome/Command/RecieveCommand?target=60");
+                string response = client.UploadString("http://localhost/SmartHome/Command/SetSensorValue", data);
+
+                //string response = client.DownloadString("http://localhost/SmartHome/Command/RecieveCommand?target=barrel1_parnik1");
                 //string response = client.DownloadString("http://smart.no-troubles.com/Command/RecieveCommand?target=60");
 
 

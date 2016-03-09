@@ -27,7 +27,7 @@ namespace SmartHome.Controllers
             _commands.AddOrUpdate(target, command, (k, v) => command);
         }
 
-        [HttpGet]
+        [HttpPost]
         public string RecieveCommand(string target)
         {
             string result = null;

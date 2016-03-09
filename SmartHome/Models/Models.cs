@@ -192,32 +192,32 @@ namespace SmartHome.Models
             this
                 // Дом
                 .AddCompositeObject(new House()
-                                        .AddSensor(new TemperatureSensor("100", "t3", "температура батареи") { Value = "63" })
-                                        .AddSensor(new TemperatureSensor("101", "t4", "температура на 1 этаже"))
-                                        .AddSensor(new TemperatureSensor("102", "t5", "температура на 2 этаже")))
+                                        .AddSensor(new TemperatureSensor("t_battery", "t_battery", "температура батареи") { Value = "63" })
+                                        .AddSensor(new TemperatureSensor("t_firstfloor", "t_firstfloor", "температура на 1 этаже"))
+                                        .AddSensor(new TemperatureSensor("t_secondfloor", "t_secondfloor", "температура на 2 этаже")))
                 // Гараж
-                .AddCompositeObject(new Garage("40", "gar1", "Гараж"))
+                .AddCompositeObject(new Garage("garage", "garage", "Гараж"))
                 // Участок
-                .AddCompositeObject(new Garden("51", "gdn1", "Участок")
-                                        .AddSensor(new MovementSensor("103", "ms2", "датчик движения на гараже")))  // Датчик движения
+                .AddCompositeObject(new Garden("garden", "garden", "Участок")
+                                        .AddSensor(new MovementSensor("movesensor", "movesensor", "датчик движения на гараже")))  // Датчик движения
 
                 // Теплица 1
-                .AddCompositeObject(new GreenHouse("53", "grh1", "Теплица 1")
-                                        .AddSensor(new TemperatureSensor("104", "t104", "температура"))
-                                        .AddSensor(new StateSensor("108", "oc108", "состояние двери") { Value = "закрыта" })
-                                        .AddCompositeObject(new Barrel("60", "barrel60", "Бочка 1")
-                                                                .AddSensor(new LevelSensor("105", "l105", "уровень")))
-                                        .AddCompositeObject(new Barrel("63", "barrel63", "Бочка 2")
-                                                                .AddSensor(new LevelSensor("106", "l106", "уровень")))
+                .AddCompositeObject(new GreenHouse("parnik1", "parnik1", "Теплица 1")
+                                        .AddSensor(new TemperatureSensor("t_parnik1", "t_parnik1", "температура"))
+                                        .AddSensor(new StateSensor("door_parnik1", "door_parnik1", "состояние двери") { Value = "закрыта" })
+                                        .AddCompositeObject(new Barrel("barrel1_parnik1", "barrel1_parnik1", "Бочка 1")
+                                                                .AddSensor(new LevelSensor("level_barrel1_parnik1", "level_barrel1_parnik1", "уровень")))
+                                        .AddCompositeObject(new Barrel("barrel2_parnik1", "barrel2_parnik1", "Бочка 2")
+                                                                .AddSensor(new LevelSensor("level_barrel2_parnik1", "level_barrel2_parnik1", "уровень")))
 
                                                                 )
 
                 // Теплица 2
-                .AddCompositeObject(new GreenHouse("52", "grh2", "Теплица 2")
-                                        .AddCompositeObject(new Barrel("61", "barrel61", "Бочка 1")
-                                                                .AddSensor(new LevelSensor("106", "l106", "уровень")))
-                                        .AddSensor(new TemperatureSensor("107", "t107", "температура"))
-                                        .AddSensor(new StateSensor("109", "oc109", "состояние двери") { Value = "закрыта" })
+                .AddCompositeObject(new GreenHouse("parnik2", "parnik2", "Теплица 2")
+                                        .AddCompositeObject(new Barrel("barrel1_parnik2", "barrel1_parnik2", "Бочка 1")
+                                                                .AddSensor(new LevelSensor("level_barrel1_parnik2", "level_barrel1_parnik2", "уровень")))
+                                        .AddSensor(new TemperatureSensor("t_parnik2", "t_parnik2", "температура"))
+                                        .AddSensor(new StateSensor("door_parnik2", "door_parnik2", "состояние двери") { Value = "закрыта" })
 
                 );
 
@@ -285,8 +285,8 @@ namespace SmartHome.Models
     public class GreenHouse : CompositeObjectBase, IControlUnit
     {
         private List<ICommand> _commands = new List<ICommand>() {
-            new GenericCommand() { Id = "1",  Name = "OpenDoor", DisplayName = "Открыть дверь" },
-            new GenericCommand() { Id = "2", Name = "CloseDoor", DisplayName = "Закрыть дверь" }
+            new GenericCommand() { Id = "opendoor",  Name = "OpenDoor", DisplayName = "Открыть дверь" },
+            new GenericCommand() { Id = "closedoor", Name = "CloseDoor", DisplayName = "Закрыть дверь" }
         };
 
         // ids starting from 50
@@ -321,8 +321,8 @@ namespace SmartHome.Models
     {
 
         private List<ICommand> _commands = new List<ICommand>() {
-            new GenericCommand() { Id = "3",  Name = "Fill", DisplayName = "Залить" },
-            new GenericCommand() { Id = "4", Name = "Empty", DisplayName = "Слить" }
+            new GenericCommand() { Id = "fill",  Name = "Fill", DisplayName = "Залить" },
+            new GenericCommand() { Id = "empty", Name = "Empty", DisplayName = "Слить" }
         };
 
         public Barrel(string id, string name, string displayName)
