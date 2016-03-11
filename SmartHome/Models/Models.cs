@@ -415,7 +415,7 @@ namespace SmartHome.Models
         protected SensorBase(string id, string name, string displayName)             
             : base(id, name, displayName)
         {
-            MeasureTime = DateTime.Now;
+            MeasureTime = DateTime.UtcNow.AddHours(3);
         }
 
         public string MeasureUnit { get; protected set; }

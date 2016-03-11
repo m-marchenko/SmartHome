@@ -16,10 +16,10 @@ namespace SmartHome.Test
             {
                 client.Headers.Add("content-type", "application/json");
 
-                var data = "{\"sensorId\":\"t_firstfloor\", \"val\":\"26\"}";
+                var data = "{\"sensorId\":\"t_firstfloor\", \"val\":\"25\"}";
 
-                string response = client.UploadString("http://localhost/SmartHome/Command/SetSensorValue", data);
-                //string response = client.UploadString("http://smart.no-troubles.com/Command/SetSensorValue", data);
+                //string response = client.UploadString("http://localhost/SmartHome/Command/SetSensorValue", data);
+                string response = client.UploadString("http://smart.no-troubles.com/Command/SetSensorValue", data);
 
 
 

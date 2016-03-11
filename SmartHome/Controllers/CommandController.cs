@@ -42,7 +42,7 @@ namespace SmartHome.Controllers
         {
             var sensor = _root.FindSensor(sensorId);
             sensor.Value = val;
-            sensor.MeasureTime = DateTime.Now;
+            sensor.MeasureTime = DateTime.UtcNow.AddHours(3);
         
         }
     }
