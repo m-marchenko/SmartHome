@@ -4,22 +4,23 @@
 }
 
 
-    <div class="tabbable tabs-top">
-        @if (Model.All.OfType<SmartHome.Models.ICompositeObject>().Count() > 0)
-        {
+    <div id="@Model.Name">
+    @if (Model.All.OfType<SmartHome.Models.ICompositeObject>().Count() > 0)
+    {
+        <div class="tabbable tabs-top">
             <ul class="nav nav-tabs">
                 @foreach (var cobj in Model.All.OfType<SmartHome.Models.ICompositeObject>())
                 {
-                    <li>                        
-                            <a data-toggle="tab" href="#@cobj.Name">@cobj.DisplayName</a>
-                            
+                    <li>
+                        <a name="@Model.Name" data-toggle="tab" href="#@cobj.Name">@cobj.DisplayName</a>
+
                     </li>
                 }
 
                 @if (Model.Sensors.Count > 0)
                 {
                     <li class="active">
-                        <a data-toggle="tab" href="#@Model.Name@Model.Id@Model.Id">Датчики</a>                        
+                        <a name='@Model.Name' data-toggle="tab" href="#@Model.Name@Model.Id@Model.Id">Датчики</a>
                     </li>
                 }
             </ul>
@@ -41,25 +42,30 @@
 
 
             </div>
-        }
-        else
-        {
-            @*<h4>@Model.DisplayName - показания датчиков</h4>*@
-            @Html.Partial("Sensors", Model.Sensors)
+        </div>
+    }
+    else
+    {
+        @*<h4>@Model.DisplayName - показания датчиков</h4>*@
+        @Html.Partial("Sensors", Model.Sensors)
 
-        }
-    </div>
-        @if (Model is SmartHome.Models.IControlUnit)
-        {
-            <div>
-                @foreach (var cmd in ((SmartHome.Models.IControlUnit)Model).AvailableCommands)
+    }
+
+    @if (Model is SmartHome.Models.IControlUnit)
+    {
+        <div>
+            @foreach (var cmd in ((SmartHome.Models.IControlUnit)Model).AvailableCommands)
                 {
-                    <button type="button" name="@Model.Id" id="@cmd.Id" class="btn btn-primary">@cmd.DisplayName</button>
-                }
-            </div>
-        }
+                <button type="button" name="@Model.Id" id="@cmd.Id" class="btn btn-primary">@cmd.DisplayName</button>
+            }
+        </div>
+    }
     <div class="divider">
         <hr />
     </div>
+</div>
+
+
+
 
 

@@ -7,7 +7,7 @@
 
     <div class="panel-group" id="accordion">
         <div class="panel panel-primary">
-            <div class="panel-heading"><h4>@Model.DisplayName</h4></div>
+            <div class="panel-heading"><nobr><div class=" pull-left"><b>@Model.DisplayName</b></div><div class="text-right"><span id="refresh" class="glyphicon glyphicon-refresh" style="cursor: pointer"></span></div></nobr></div>
         </div>
 
         @{
@@ -16,7 +16,7 @@
                 <div class="panel panel-default">
                     <div class="panel-heading">
                         <h4 class="panel-title">
-                            <a data-toggle="collapse" data-parent="#accordion" href="#@s.Name@s.Id">@s.DisplayName</a>                                                                                        
+                            <a name="@s.Name" data-toggle="collapse" data-parent="#accordion" href="#@s.Name@s.Id">@s.DisplayName</a>                                                                                        
                         </h4>
                     </div>
                     <div id="@s.Name@s.Id" class="panel-collapse collapse">
@@ -34,31 +34,65 @@
 
 @section scripts {
     <script type="text/javascript">
-    $(function () {
-        $(".btn").click(function () {
-            //debugger;
-            //alert("event=" + "@Model.Id" + " , id=" + this.id + " unit=" + this.name);
+        var current = null;
+        $(function () {
+            $(".btn").click(function () {
+                //debugger;
+                //alert("event=" + "@Model.Id" + " , id=" + this.id + " unit=" + this.name);
 
-            $.ajax({
-                type: 'POST',
-                url: '@Url.Action("SendCommand", "Command")',
-                //url: '/api/Command/' + this.id + "/" + this.name,
-                //url: '/api/Command/' + this.id,
-                //dataType: "json",
-                cache: false,
-                contentType: "application/json",
-                data: "{\"command\":\"" + this.id + "\", \"target\":\"" + this.name + "\" }",
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("SendCommand", "Command")',
+                    //url: '/api/Command/' + this.id + "/" + this.name,
+                    //url: '/api/Command/' + this.id,
+                    //dataType: "json",
+                    cache: false,
+                    contentType: "application/json",
+                    data: "{\"command\":\"" + this.id + "\", \"target\":\"" + this.name + "\" }",
 
-                success: function (data) {
+                    success: function (data) {
 
-                },
+                    },
 
-                error: function (data) {
-                    debugger;
-                    alert(data);
-                }
+                    error: function (data) {
+                        debugger;
+                        alert(data);
+                    }
+                });
+
             });
 
+            $("a").click(function () { current = this.name; alert(current); });
+
+        $("#refresh").click(function () {
+            //debugger;
+            if (current != null) {
+                //alert("refreshing " + current);
+
+                $.ajax({
+                    type: 'GET',
+                    url: '@Url.Action("Refresh")/' + current,
+                    cache: false,
+                    beforeSend: function () {
+                        //$("#mbbusy").show();
+                    },
+                    complete: function () {
+                        //$("#mbbusy").hide();
+                    },
+
+                    success: function (data) {
+                        //debugger;
+                        //alert(data);
+                        // заменяем содержимое присланным частичным представлением
+                        $('#'+current).replaceWith(data);
+                        //alert($(".mbselect").length);
+                    },
+                    error: function (err) {
+                        //debugger;
+                    }
+                });
+
+            }
         });
     });
 

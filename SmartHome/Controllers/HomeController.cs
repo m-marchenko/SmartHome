@@ -21,6 +21,13 @@ namespace SmartHome.Controllers
             return View(_root);
         }
 
+        public ActionResult Refresh(string id)
+        {
+            var m = _root.FindCompositeObject(id);
+
+            return PartialView("CompositeObject", m);
+        }
+
         public ActionResult Index()
         {
             return View();

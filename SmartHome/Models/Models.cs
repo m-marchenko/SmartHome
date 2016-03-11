@@ -11,6 +11,8 @@ namespace SmartHome.Models
     public interface IRootObject : ICompositeObject
     {
         ISensor FindSensor(string sensorId);
+
+        ICompositeObject FindCompositeObject(string id);
     }
 
     public interface IGenericObject
@@ -229,6 +231,31 @@ namespace SmartHome.Models
             #endregion
         }
 
+        public ICompositeObject FindCompositeObject(string id)
+        {
+            return FindCompositeObject(id, this);
+        }
+
+        private ICompositeObject FindCompositeObject(string id, ICompositeObject obj)
+        {
+            var result = obj.GetCompositeObjects().Where(s => s.Id == id).FirstOrDefault();
+
+            if (result == null)
+            {
+                foreach (var cobj in obj.GetCompositeObjects())
+                {
+                    result = FindCompositeObject(id, cobj);
+                    if (result != null)
+                        break;
+                }
+            }
+
+            return result;
+
+        }
+
+
+
         public ISensor FindSensor(string sensorId)
         {
             return FindSensor(sensorId, this);
@@ -256,7 +283,7 @@ namespace SmartHome.Models
     {
         public House()
         {
-            Id = "1";
+            Id = "House";
             Name = "House";
             DisplayName = "Дом";
         }
