@@ -18,8 +18,8 @@ namespace SmartHome.Test
 
                 var data = "{\"sensorId\":\"t_firstfloor\", \"val\":\"25\"}";
 
-                //string response = client.UploadString("http://localhost/SmartHome/Command/SetSensorValue", data);
-                string response = client.UploadString("http://smart.no-troubles.com/Command/SetSensorValue", data);
+                string response = client.UploadString("http://localhost/SmartHome/Command/SetSensorValue", data);
+                //string response = client.UploadString("http://smart.no-troubles.com/Command/SetSensorValue", data);
 
 
 
