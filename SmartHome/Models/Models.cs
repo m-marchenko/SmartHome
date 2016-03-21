@@ -349,7 +349,8 @@ namespace SmartHome.Models
 
         private List<ICommand> _commands = new List<ICommand>() {
             new GenericCommand() { Id = "fill",  Name = "Fill", DisplayName = "Залить" },
-            new GenericCommand() { Id = "empty", Name = "Empty", DisplayName = "Слить" }
+            new GenericCommand() { Id = "empty", Name = "Empty", DisplayName = "Слить" },
+            new GenericCommand() { Id = "block", Name = "Block", DisplayName = "Перекрыть" }
         };
 
         public Barrel(string id, string name, string displayName)
