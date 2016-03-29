@@ -1,7 +1,9 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 
 namespace SmartHome.Models
 {
@@ -17,11 +19,17 @@ namespace SmartHome.Models
 
     public interface IGenericObject
     {
-        string Id { get; }
+        string Id { get; }        
 
         string Name { get; }
 
         string DisplayName { get; }
+
+        string ClientId { get; }
+
+        string HardId { get; }
+
+        IGenericObject Parent { get; set; }
 
     }
 
@@ -40,6 +48,7 @@ namespace SmartHome.Models
         ICompositeObject AddCompositeObject(ICompositeObject cobject);
 
         ICompositeObject AddControlUnit(IControlUnit unit);
+        
     }
 
     public interface ISensor : IGenericObject
@@ -59,6 +68,7 @@ namespace SmartHome.Models
         List<ICommand> AvailableCommands { get; }
 
         Dictionary<string, string> Settings { get; }
+
         void ExecuteCommand(ICommand command);
     }
 
@@ -97,6 +107,23 @@ namespace SmartHome.Models
             Name = name;
             DisplayName = displayName;
         }
+
+        public string ClientId
+        {
+            get
+            {
+                var result = Id;
+                var p = Parent;
+                while (p != null)
+                {
+                    result = String.Format("{0}_{1}", p.Id, result);
+                    p = p.Parent;
+                }
+
+                return result;
+            }
+        }
+
         public string DisplayName
         {
             get; protected set;
@@ -111,6 +138,19 @@ namespace SmartHome.Models
         {
             get; protected set;
         }
+
+        [XmlIgnore]
+        [JsonIgnore]
+        public IGenericObject Parent
+        {
+            get; set;
+        }
+
+        /// <summary>
+        /// это "железный" id. уникальный в рамках всего проекта
+        /// </summary>
+        // временное решение
+        public string HardId { get { return Id; } }
     }
 
     public abstract class CompositeObjectBase : GenericObjectBase, ICompositeObject
@@ -139,16 +179,19 @@ namespace SmartHome.Models
         protected void AddSensorInternal(ISensor sensor)
         {
             _all.Add(sensor);
+            sensor.Parent = this;
         }
 
         protected void AddCompositeObjectInternal(ICompositeObject obj)
         {
             _all.Add(obj);
+            obj.Parent = this;
         }
 
         protected void AddContolUnitInternal(IControlUnit unit)
         {
             _all.Add(unit);
+            unit.Parent = this;
         }
 
         public ICollection<ICompositeObject> GetCompositeObjects(bool includeConrolUnits = true)
@@ -185,7 +228,7 @@ namespace SmartHome.Models
         public Fazenda()
             : base()
         {
-            Id = "0";
+            Id = "root";
             Name = "Fazenda";
             DisplayName = "Фазенда";
 
@@ -194,9 +237,9 @@ namespace SmartHome.Models
             this
                 // Дом
                 .AddCompositeObject(new House()
-                                        .AddSensor(new TemperatureSensor("t_battery", "t_battery", "температура батареи") { Value = "63" })
-                                        .AddSensor(new TemperatureSensor("t_firstfloor", "t_firstfloor", "температура на 1 этаже"))
-                                        .AddSensor(new TemperatureSensor("t_secondfloor", "t_secondfloor", "температура на 2 этаже")))
+                                        .AddSensor(new TemperatureSensor("battery", "battery", "температура батареи") { Value = "63" })
+                                        .AddSensor(new TemperatureSensor("firstfloor", "firstfloor", "температура на 1 этаже"))
+                                        .AddSensor(new TemperatureSensor("secondfloor", "secondfloor", "температура на 2 этаже")))
                 // Гараж
                 .AddCompositeObject(new Garage("garage", "garage", "Гараж"))
                 // Участок
@@ -205,21 +248,21 @@ namespace SmartHome.Models
 
                 // Теплица 1
                 .AddCompositeObject(new GreenHouse("parnik1", "parnik1", "Теплица 1")
-                                        .AddSensor(new TemperatureSensor("t_parnik1", "t_parnik1", "температура"))
-                                        .AddSensor(new StateSensor("door_parnik1", "door_parnik1", "состояние двери") { Value = "закрыта" })
-                                        .AddCompositeObject(new Barrel("barrel1_parnik1", "barrel1_parnik1", "Бочка 1")
-                                                                .AddSensor(new LevelSensor("level_barrel1_parnik1", "level_barrel1_parnik1", "уровень")))
-                                        .AddCompositeObject(new Barrel("barrel2_parnik1", "barrel2_parnik1", "Бочка 2")
-                                                                .AddSensor(new LevelSensor("level_barrel2_parnik1", "level_barrel2_parnik1", "уровень")))
+                                        .AddSensor(new TemperatureSensor("temperature", "temperature", "температура"))
+                                        .AddSensor(new StateSensor("door", "door", "состояние двери") { Value = "закрыта" })
+                                        .AddCompositeObject(new Barrel("barrel1", "barrel1", "Бочка 1")
+                                                                .AddSensor(new LevelSensor("level", "level", "уровень")))
+                                        .AddCompositeObject(new Barrel("barrel2", "barrel2", "Бочка 2")
+                                                                .AddSensor(new LevelSensor("level", "level", "уровень")))
 
                                                                 )
 
                 // Теплица 2
                 .AddCompositeObject(new GreenHouse("parnik2", "parnik2", "Теплица 2")
-                                        .AddCompositeObject(new Barrel("barrel1_parnik2", "barrel1_parnik2", "Бочка 1")
-                                                                .AddSensor(new LevelSensor("level_barrel1_parnik2", "level_barrel1_parnik2", "уровень")))
-                                        .AddSensor(new TemperatureSensor("t_parnik2", "t_parnik2", "температура"))
-                                        .AddSensor(new StateSensor("door_parnik2", "door_parnik2", "состояние двери") { Value = "закрыта" })
+                                        .AddCompositeObject(new Barrel("barrel1", "barrel1", "Бочка 1")
+                                                                .AddSensor(new LevelSensor("level", "level_barrel1_parnik2", "уровень")))
+                                        .AddSensor(new TemperatureSensor("temperature", "temperature", "температура"))
+                                        .AddSensor(new StateSensor("door", "door", "состояние двери") { Value = "закрыта" })
 
                 );
 
@@ -238,7 +281,7 @@ namespace SmartHome.Models
 
         private ICompositeObject FindCompositeObject(string id, ICompositeObject obj)
         {
-            var result = obj.GetCompositeObjects().Where(s => s.Id == id).FirstOrDefault();
+            var result = obj.GetCompositeObjects().Where(s => s.ClientId == id).FirstOrDefault();
 
             if (result == null)
             {
@@ -263,7 +306,7 @@ namespace SmartHome.Models
 
         private ISensor FindSensor(string id, ICompositeObject cobject)
         {
-            var result = cobject.Sensors.Where(s => s.Id == id).FirstOrDefault();
+            var result = cobject.Sensors.Where(s => s.HardId == id).FirstOrDefault();
 
             if (result == null)
             {
@@ -312,8 +355,8 @@ namespace SmartHome.Models
     public class GreenHouse : CompositeObjectBase, IControlUnit
     {
         private List<ICommand> _commands = new List<ICommand>() {
-            new GenericCommand() { Id = "opendoor",  Name = "OpenDoor", DisplayName = "Открыть дверь" },
-            new GenericCommand() { Id = "closedoor", Name = "CloseDoor", DisplayName = "Закрыть дверь" }
+            new GenericCommand("opendoor",  "OpenDoor", "Открыть дверь"),
+            new GenericCommand("closedoor", "CloseDoor", "Закрыть дверь")
         };
 
         // ids starting from 50
@@ -348,9 +391,9 @@ namespace SmartHome.Models
     {
 
         private List<ICommand> _commands = new List<ICommand>() {
-            new GenericCommand() { Id = "fill",  Name = "Fill", DisplayName = "Залить" },
-            new GenericCommand() { Id = "empty", Name = "Empty", DisplayName = "Слить" },
-            new GenericCommand() { Id = "block", Name = "Block", DisplayName = "Перекрыть" }
+            new GenericCommand("fill",  "Fill", "Залить" ),
+            new GenericCommand("empty", "Empty", "Слить" ),
+            new GenericCommand("block", "Block", "Перекрыть" )
         };
 
         public Barrel(string id, string name, string displayName)
@@ -381,27 +424,35 @@ namespace SmartHome.Models
 
     }
 
-    public class GenericCommand : ICommand
+    public class GenericCommand : GenericObjectBase, ICommand
     {
+
+        public GenericCommand(string id, string name, string displayName)
+        {
+            Id = id;
+            Name = name;
+            DisplayName = displayName;
+        }
+
         public bool CanExecute
         {
             get; set;
         }
 
-        public string DisplayName
-        {
-            get; set;
-        }
+        //public string DisplayName
+        //{
+        //    get; set;
+        //}
 
-        public string Id
-        {
-            get; set;
-        }
+        //public string Id
+        //{
+        //    get; set;
+        //}
 
-        public string Name
-        {
-            get; set;
-        }
+        //public string Name
+        //{
+        //    get; set;
+        //}
     }
 
     #region Sensors

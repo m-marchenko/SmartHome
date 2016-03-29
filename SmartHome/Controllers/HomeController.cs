@@ -1,9 +1,11 @@
 ﻿using SmartHome.Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using System.Xml.Serialization;
 
 namespace SmartHome.Controllers
 {
@@ -13,6 +15,14 @@ namespace SmartHome.Controllers
         public HomeController(IRootObject root)
         {
             _root = root;
+
+            //XmlSerializer xs = new XmlSerializer(typeof(Fazenda));
+
+            //StringWriter sw = new StringWriter();
+
+            //xs.Serialize(sw, root);
+
+            //var s = sw.ToString();
         }
 
 
