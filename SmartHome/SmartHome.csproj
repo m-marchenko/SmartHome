@@ -145,6 +145,7 @@
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\DependencyConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
+    <Compile Include="App_Start\RootUnitConfigHandler.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\CommandController.cs" />
@@ -152,7 +153,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Models\Models.cs" />
+    <Compile Include="Models\DataContracts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -166,6 +167,7 @@
     <Content Include="Scripts\bootstrap.min.js" />
     <None Include="Properties\PublishProfiles\smart.no-troubles.com - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\SmartHome - File System.pubxml" />
+    <Content Include="RootUnit.config" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />
     <Content Include="Scripts\jquery-1.10.2.min.js" />

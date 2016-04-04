@@ -16,7 +16,7 @@ namespace SmartHome.Controllers
 {
     public class CommandController : Controller
     {
-        private IRootObject _root;
+        //private IRootObject _root;
 
         private static ConcurrentDictionary<string, string> _commands = new ConcurrentDictionary<string, string>();
 
@@ -24,9 +24,8 @@ namespace SmartHome.Controllers
 
         private static object _sync = new object();
 
-        public CommandController(IRootObject root)
-        {
-            _root = root;
+        public CommandController()
+        {            
 
             if (_mqtt == null)
             {
@@ -52,20 +51,20 @@ namespace SmartHome.Controllers
         [HttpPost]        
         public void SendCommand(string command, string target)
         {
-            var cobj = _root.FindCompositeObject(target);
-            if (cobj == null) return;
+            //var cobj = _root.FindCompositeObject(target);
+            //if (cobj == null) return;
 
-            _commands.AddOrUpdate(target, command, (k, v) => command);
+            //_commands.AddOrUpdate(target, command, (k, v) => command);
 
-            if (_mqtt.IsConnected)
-            {
-                //var cmd = String.Format("{{\"command\":\"{0}\", \"target\":\"{1}\"}}", command, target);
-                //_mqtt.Publish("command/" + target.Replace("_", "/"), Encoding.ASCII.GetBytes(cmd));
+            //if (_mqtt.IsConnected)
+            //{
+            //    //var cmd = String.Format("{{\"command\":\"{0}\", \"target\":\"{1}\"}}", command, target);
+            //    //_mqtt.Publish("command/" + target.Replace("_", "/"), Encoding.ASCII.GetBytes(cmd));
 
-                var cmd = JsonConvert.SerializeObject(new { Command = command, Target = cobj.HardId });
+            //    var cmd = JsonConvert.SerializeObject(new { Command = command, Target = cobj.HardId });
 
-                _mqtt.Publish("command", Encoding.ASCII.GetBytes(cmd));
-            }
+            //    _mqtt.Publish("command", Encoding.ASCII.GetBytes(cmd));
+            //}
         }
 
         [HttpPost]
@@ -81,18 +80,18 @@ namespace SmartHome.Controllers
         [HttpPost]
         public void SetSensorValue(string sensorId, string val)
         {
-            var sensor = _root.FindSensor(sensorId);
-            if (sensor == null)
-                return;
+            //var sensor = _root.FindSensor(sensorId);
+            //if (sensor == null)
+            //    return;
 
-            sensor.Value = val;
-            sensor.MeasureTime = DateTime.UtcNow.AddHours(3);
+            //sensor.Value = val;
+            //sensor.MeasureTime = DateTime.UtcNow.AddHours(3);
 
-            if (_mqtt.IsConnected)
-            {
-                var msg = JsonConvert.SerializeObject(sensor);
-                _mqtt.Publish("sensor", Encoding.ASCII.GetBytes(msg));
-            }
+            //if (_mqtt.IsConnected)
+            //{
+            //    var msg = JsonConvert.SerializeObject(sensor);
+            //    _mqtt.Publish("sensor", Encoding.ASCII.GetBytes(msg));
+            //}
 
 
         }

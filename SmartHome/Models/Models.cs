@@ -95,6 +95,7 @@ namespace SmartHome.Models
 
     #region Implementations
 
+    [Serializable]
     public abstract class GenericObjectBase : IGenericObject
     {
         protected GenericObjectBase()
@@ -126,17 +127,17 @@ namespace SmartHome.Models
 
         public string DisplayName
         {
-            get; protected set;
+            get;  set;
         }
 
         public string Id
         {
-            get; protected set;
+            get;  set;
         }
 
         public string Name
         {
-            get; protected set;
+            get;  set;
         }
 
         [XmlIgnore]
@@ -153,6 +154,7 @@ namespace SmartHome.Models
         public string HardId { get { return Id; } }
     }
 
+    [Serializable]
     public abstract class CompositeObjectBase : GenericObjectBase, ICompositeObject
     {
         protected readonly ICollection<IGenericObject> _all = new List<IGenericObject>();
@@ -223,6 +225,7 @@ namespace SmartHome.Models
         }
     }
 
+    [Serializable]
     public class Fazenda : CompositeObjectBase, IRootObject
     {
         public Fazenda()
@@ -322,6 +325,7 @@ namespace SmartHome.Models
         }
     }
 
+    [Serializable]
     public class House : CompositeObjectBase
     {
         public House()
@@ -332,6 +336,7 @@ namespace SmartHome.Models
         }
     }
 
+    [Serializable]
     public class Garage : CompositeObjectBase
     {
         // ids starting from 40
@@ -342,6 +347,7 @@ namespace SmartHome.Models
         }
     }
 
+    [Serializable]
     public class Garden : CompositeObjectBase
     {
         // ids starting from 30
@@ -352,6 +358,7 @@ namespace SmartHome.Models
 
     }
 
+    [Serializable]
     public class GreenHouse : CompositeObjectBase, IControlUnit
     {
         private List<ICommand> _commands = new List<ICommand>() {
@@ -387,6 +394,7 @@ namespace SmartHome.Models
         }
     }
 
+    [Serializable]
     public class Barrel : CompositeObjectBase, IControlUnit
     {
 
@@ -424,6 +432,7 @@ namespace SmartHome.Models
 
     }
 
+    [Serializable]
     public class GenericCommand : GenericObjectBase, ICommand
     {
 
@@ -457,6 +466,7 @@ namespace SmartHome.Models
 
     #region Sensors
 
+    [Serializable]
     public abstract class SensorBase : GenericObjectBase, ISensor
     {
         protected SensorBase()
@@ -477,6 +487,7 @@ namespace SmartHome.Models
         public DateTime MeasureTime { get; set; }
     }
 
+    [Serializable]
     public class TemperatureSensor : SensorBase
     {
         private TemperatureSensor()
@@ -491,6 +502,7 @@ namespace SmartHome.Models
 
     }
 
+    [Serializable]
     public class MovementSensor : SensorBase
     {
         public MovementSensor(string id, string name, string displayName) : base(id, name, displayName)
@@ -501,6 +513,7 @@ namespace SmartHome.Models
         }
     }
 
+    [Serializable]
     public class LevelSensor : SensorBase
     {
         public LevelSensor(string id, string name, string displayName) : base(id, name, displayName)
@@ -515,6 +528,7 @@ namespace SmartHome.Models
     /// <summary>
     /// Датчик состояния
     /// </summary>
+    [Serializable]
     public class StateSensor : SensorBase
     {
         public StateSensor(string id, string name, string displayName) : base(id, name, displayName)

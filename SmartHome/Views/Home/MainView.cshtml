@@ -1,4 +1,5 @@
-﻿@model SmartHome.Models.IRootObject
+﻿@using SmartHome.Models.DataContracts;
+@model RootUnit
 @{
     ViewBag.Title = Model.DisplayName;
 }
@@ -11,7 +12,7 @@
         </div>
 
         @{
-            foreach (var s in Model.All.OfType<SmartHome.Models.ICompositeObject>())
+            foreach (var s in Model.Units)
             {
                 <div class="panel panel-default">
                     <div class="panel-heading">

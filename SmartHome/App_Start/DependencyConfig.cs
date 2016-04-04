@@ -55,8 +55,8 @@ namespace SmartHome
         }
 
         private static void RegisterDependencyMappingOverrides(ContainerBuilder builder)
-        {
-            builder.RegisterType<Fazenda>().As<IRootObject>().SingleInstance();
+        {            
+            //builder.RegisterType<Fazenda>().As<IRootObject>().SingleInstance();
         }
     }
 }
