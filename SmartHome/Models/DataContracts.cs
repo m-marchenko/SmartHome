@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,21 +23,25 @@ namespace SmartHome.Models.DataContracts
             DisplayName = displayName;
         }
 
+        [XmlAttribute]
         public string DisplayName
         {
             get; set;
         }
 
+        [XmlAttribute]
         public string Id
         {
             get; set;
         }
 
+        [XmlAttribute]
         public string Name
         {
             get; set;
         }
 
+        [JsonIgnore]
         [XmlIgnore]
         public CompositeObjectBase Parent { get; set; }
 
@@ -80,6 +85,9 @@ namespace SmartHome.Models.DataContracts
 
         public void UpdateParents()
         {
+            if (Units == null)
+                return;
+
             foreach (var unit in this.Units)
             {
                 unit.Parent = this;
@@ -96,6 +104,47 @@ namespace SmartHome.Models.DataContracts
                 command.Parent = this;
             }
         }
+
+        public SensorBase FindSensor(string sensorId)
+        {
+            if (Sensors == null)
+                return null;
+
+            var result = Sensors.Where(s => s.HardId == sensorId).FirstOrDefault();
+            if (result == null)
+            {
+                foreach(var unit in Units)
+                {
+                    result = unit.FindSensor(sensorId);
+
+                    if (result != null)
+                        break;
+                }
+            }
+
+            return result;
+        }
+
+        public CompositeObjectBase FindUnit(string unitId)
+        {
+            if (Units == null)
+                return null;
+
+            var result = Units.Where(s => s.ClientId == unitId).FirstOrDefault();
+            if (result == null)
+            {
+                foreach (var unit in Units)
+                {
+                    result = unit.FindUnit(unitId);
+
+                    if (result != null)
+                        break;
+                }
+            }
+
+            return result;
+
+        }
     }
 
     public abstract class SensorBase : GenericObjectBase
@@ -108,6 +157,7 @@ namespace SmartHome.Models.DataContracts
         /// <summary>
         /// это "железный" id. уникальный в рамках всего проекта
         /// </summary>
+        [XmlAttribute]
         public string HardId { get; set; }
         public string MeasureUnit { get;  set; }
         public SensorType SensorType { get;  set; }
@@ -160,6 +210,7 @@ namespace SmartHome.Models.DataContracts
     }
 
     [XmlInclude(typeof(House))]
+    [XmlInclude(typeof(Garden))]
     [XmlInclude(typeof(Greenhouse))]
     [XmlInclude(typeof(Barrel))]
     [XmlInclude(typeof(Command))]
@@ -176,7 +227,12 @@ namespace SmartHome.Models.DataContracts
 
     }
 
-    
+    public class Garden : CompositeObjectBase
+    {
+
+    }
+
+
     public class Greenhouse : CompositeObjectBase
     {
 

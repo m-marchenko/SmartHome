@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using SmartHome.Models;
+using SmartHome.Models.DataContracts;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -18,14 +19,17 @@ namespace SmartHome.Controllers
     {
         //private IRootObject _root;
 
+        private RootUnit _root;
+
         private static ConcurrentDictionary<string, string> _commands = new ConcurrentDictionary<string, string>();
 
         private static MqttClient _mqtt;
 
         private static object _sync = new object();
 
-        public CommandController()
-        {            
+        public CommandController(RootUnit root)
+        {
+            _root = root;
 
             if (_mqtt == null)
             {
@@ -48,23 +52,29 @@ namespace SmartHome.Controllers
             _mqtt.Connect("my_unique_identifier", ConfigurationManager.AppSettings["mqtt:user"], ConfigurationManager.AppSettings["mqtt:password"]);
         }
 
+        /// <summary>
+        /// Послать команду
+        /// </summary>
+        /// <param name="command">Имя команды</param>
+        /// <param name="target">ClientId объекта, содержащего команду</param>
         [HttpPost]        
         public void SendCommand(string command, string target)
         {
-            //var cobj = _root.FindCompositeObject(target);
-            //if (cobj == null) return;
+            var unit = _root.FindUnit(target);
+            if (unit == null) return;
 
-            //_commands.AddOrUpdate(target, command, (k, v) => command);
+            _commands.AddOrUpdate(target, command, (k, v) => command);
 
-            //if (_mqtt.IsConnected)
-            //{
-            //    //var cmd = String.Format("{{\"command\":\"{0}\", \"target\":\"{1}\"}}", command, target);
-            //    //_mqtt.Publish("command/" + target.Replace("_", "/"), Encoding.ASCII.GetBytes(cmd));
+            if (_mqtt.IsConnected)
+            {
+                //var cmd = String.Format("{{\"command\":\"{0}\", \"target\":\"{1}\"}}", command, target);
+                //_mqtt.Publish("command/" + target.Replace("_", "/"), Encoding.ASCII.GetBytes(cmd));
 
-            //    var cmd = JsonConvert.SerializeObject(new { Command = command, Target = cobj.HardId });
+                var cmd = JsonConvert.SerializeObject(new { Command = command, Target = unit.ClientId });
+                var topic = unit.ClientId.Replace("_", "/");
 
-            //    _mqtt.Publish("command", Encoding.ASCII.GetBytes(cmd));
-            //}
+                _mqtt.Publish(topic, Encoding.ASCII.GetBytes(cmd));
+            }
         }
 
         [HttpPost]
@@ -80,18 +90,18 @@ namespace SmartHome.Controllers
         [HttpPost]
         public void SetSensorValue(string sensorId, string val)
         {
-            //var sensor = _root.FindSensor(sensorId);
-            //if (sensor == null)
-            //    return;
+            var sensor = _root.FindSensor(sensorId);
+            if (sensor == null)
+                return;
 
-            //sensor.Value = val;
-            //sensor.MeasureTime = DateTime.UtcNow.AddHours(3);
+            sensor.Value = val;
+            sensor.MeasureTime = DateTime.UtcNow.AddHours(3);
 
-            //if (_mqtt.IsConnected)
-            //{
-            //    var msg = JsonConvert.SerializeObject(sensor);
-            //    _mqtt.Publish("sensor", Encoding.ASCII.GetBytes(msg));
-            //}
+            if (_mqtt.IsConnected)
+            {
+                var msg = JsonConvert.SerializeObject(sensor);
+                _mqtt.Publish("sensor", Encoding.ASCII.GetBytes(msg));
+            }
 
 
         }

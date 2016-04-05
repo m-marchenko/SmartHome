@@ -17,14 +17,14 @@ namespace SmartHome.Controllers
 
         private static RootUnit _root;
 
-        public HomeController()
+        public HomeController(RootUnit root)
         {
-            //  _root = root;
+              _root = root;
 
-            if (_root != null) return;
+            //if (_root != null) return;
 
-            _root = (RootUnit)(ConfigurationManager.GetSection("RootUnit"));
-            _root.UpdateParents();
+            //_root = (RootUnit)(ConfigurationManager.GetSection("RootUnit"));
+            //_root.UpdateParents();
 
         }
 

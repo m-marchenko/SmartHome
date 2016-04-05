@@ -2,8 +2,10 @@
 using Autofac.Integration.Mvc;
 using Autofac.Integration.WebApi;
 using SmartHome.Models;
+using SmartHome.Models.DataContracts;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -55,7 +57,12 @@ namespace SmartHome
         }
 
         private static void RegisterDependencyMappingOverrides(ContainerBuilder builder)
-        {            
+        {
+            var root = (RootUnit)(ConfigurationManager.GetSection("RootUnit"));
+            root.UpdateParents();
+
+            builder.RegisterInstance<RootUnit>(root);
+
             //builder.RegisterType<Fazenda>().As<IRootObject>().SingleInstance();
         }
     }
