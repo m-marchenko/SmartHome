@@ -70,10 +70,10 @@ namespace SmartHome.Controllers
                 //var cmd = String.Format("{{\"command\":\"{0}\", \"target\":\"{1}\"}}", command, target);
                 //_mqtt.Publish("command/" + target.Replace("_", "/"), Encoding.ASCII.GetBytes(cmd));
 
-                var cmd = JsonConvert.SerializeObject(new { Command = command, Target = unit.ClientId });
+                var cmd = JsonConvert.SerializeObject(new { Command = command, Target = unit.Id });
                 var topic = unit.ClientId.Replace("_", "/");
 
-                _mqtt.Publish(topic, Encoding.ASCII.GetBytes(cmd));
+                _mqtt.Publish(topic, Encoding.UTF8.GetBytes(cmd));
             }
         }
 
@@ -99,8 +99,9 @@ namespace SmartHome.Controllers
 
             if (_mqtt.IsConnected)
             {
-                var msg = JsonConvert.SerializeObject(sensor);
-                _mqtt.Publish("sensor", Encoding.ASCII.GetBytes(msg));
+                //var msg = JsonConvert.SerializeObject(sensor);
+                var msg = JsonConvert.SerializeObject(new  { clientid = sensor.ClientId, display = sensor.DisplayName, value = sensor.Value, time = sensor.MeasureTime.Value.ToString("dd.MM HH:mm", new System.Globalization.CultureInfo("ru-RU")) });
+                _mqtt.Publish("sensor", Encoding.UTF8.GetBytes(msg));
             }
 
 

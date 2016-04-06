@@ -16,7 +16,7 @@ namespace SmartHome.Test
             {
                 client.Headers.Add("content-type", "application/json");
 
-                var data = "{\"sensorId\":\"TM0001\", \"val\":\"15\"}";
+                var data = "{\"sensorId\":\"TM0001\", \"val\":\"17\"}";
 
                 string response = client.UploadString("http://localhost/SmartHome/Command/SetSensorValue", data);
                 //string response = client.UploadString("http://smart.no-troubles.com/Command/SetSensorValue", data);

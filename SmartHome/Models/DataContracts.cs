@@ -163,7 +163,7 @@ namespace SmartHome.Models.DataContracts
         public SensorType SensorType { get;  set; }
         public string Value { get; set; }
 
-        public DateTime MeasureTime { get; set; }
+        public DateTime? MeasureTime { get; set; }
     }
 
 
