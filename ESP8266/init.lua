@@ -12,8 +12,8 @@ tmr.alarm(1, 1000, 1, function()
         local pinwifi=2 --gpio 4
         gpio.mode(pinwifi, gpio.OUTPUT)
         gpio.write(pinwifi, gpio.LOW)
-        dofile("barrel.lua")
-        --dofile("bridge.lua")
+        --dofile("barrel.lua")
+        dofile("bridge.lua")
     end 
  end)
 

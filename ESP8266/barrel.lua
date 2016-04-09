@@ -10,15 +10,16 @@ gpio.write(pinbottom, gpio.LOW)
 
 tmr.alarm(0,5000, 1, function()
 if gpio.read(pinstop)==0 then 
+tmr.stop(0)
 tmr.stop(1) 
 tmr.stop(2)
-uart.on("data") 
+--uart.on("data") 
 print("Timers stopped") 
 end end)
 
 local host = "smart.no-troubles.com"
 tmr.alarm(1, 15000, tmr.ALARM_AUTO, function()
- data = {target="barrel1_parnik1"}
+ data = {target="root_parnik1_barrel1"}
  req = {}
  req.host = host
  req.method = "POST"
@@ -35,16 +36,20 @@ tmr.alarm(1, 15000, tmr.ALARM_AUTO, function()
        gpio.write(pintop, gpio.HIGH)
        gpio.write(pinbottom, gpio.LOW)    
        print("fill command")
+    elseif cmd == "block" then
+       gpio.write(pintop, gpio.LOW)
+       gpio.write(pinbottom, gpio.LOW)    
+       print("block command")       
     end
+    con:close()
  end)
 end)
 tmr.alarm(2, 10000, tmr.ALARM_AUTO, function()
- data = {sensorId="t_parnik1", val=25}
+ data = {sensorId="root_House_firstfloor", val=25}
  req = {}
  req.host = host
  req.method = "POST"
  req.webmethod = "/Command/SetSensorValue"
- --req.data = "{\"target\":\"barrel1_parnik1\"}"
  req.data = cjson.encode(data) 
  wsend(req, function(con, pl) 
     cmd = string.sub(pl,string.find(pl,"\r\n\r\n") + 4)    

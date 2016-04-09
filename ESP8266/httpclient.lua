@@ -2,7 +2,7 @@ function wsend(request, onrecieve)
 result = nil
 conn=net.createConnection(net.TCP, false) 
 conn:on("receive", onrecieve)
-conn:on("disconnection", function(conn) print("Got disconnection...") end)
+--conn:on("disconnection", function(conn) print("Got disconnection...") end)
 conn:on("connection", function(conn, payload) 
 --print('\nConnected') 
 r = request.method.." http://"..request.host..request.webmethod.." HTTP/1.1\r\n" 

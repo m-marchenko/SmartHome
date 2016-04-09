@@ -10,24 +10,29 @@ print("Bridge stopped")
 end end)
 
 local host = "smart.no-troubles.com"
-tmr.alarm(2, 10000, tmr.ALARM_AUTO, function()
- data = {target="barrel1_parnik1"}
- req = {}
- req.host = host
- req.method = "POST"
- req.webmethod = "/Command/RecieveCommand"
- --req.data = "{\"target\":\"barrel1_parnik1\"}"
- req.data = cjson.encode(data) 
- wsend(req)
-end)
 
 http = {}
 http.method="POST"
 http.host=host
 http.webmethod="/Command/SetSensorValue"
 
+local client=mqtt.Client("parnik1", 6000, "quefkobd", "524rVRkbylHl")
+client:on("connect", function(client) print ("connected") end)
+client:on("message", function(client, topic, data) 
+  print(topic .. ":" ) 
+  if data ~= nil then
+    print(data)
+  end
+end)
+client:connect("m10.cloudmqtt.com", 16425, 0, 
+  function(client) print("connected") 
+   client:subscribe("root/parnik1/#",0, function(client) print("subscribe success") end)
+  end, 
+  function(client, reason) print("failed reason: "..reason) end)
+
 uart.on("data",0,function(data) 
 --print(data) 
+client:publish("sensor", data, 0, 0)
 http.data=data
-wsend(http) 
+wsend(http, function(con, pl) end) 
 end, 0)
