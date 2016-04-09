@@ -1,4 +1,5 @@
-﻿@model SmartHome.Models.IRootObject
+﻿@using SmartHome.Models.DataContracts;
+@model RootUnit
 @{
     ViewBag.Title = Model.DisplayName;
 }
@@ -11,15 +12,15 @@
         </div>
 
         @{
-            foreach (var s in Model.All.OfType<SmartHome.Models.ICompositeObject>())
+            foreach (var s in Model.Units)
             {
                 <div class="panel panel-default">
                     <div class="panel-heading">
                         <h4 class="panel-title">
-                            <a name="@s.Name" data-toggle="collapse" data-parent="#accordion" href="#@s.Name@s.Id">@s.DisplayName</a>                                                                                        
+                            <a name="@s.Name" data-toggle="collapse" data-parent="#accordion" href="#@s.ClientId">@s.DisplayName</a>                                                                                        
                         </h4>
                     </div>
-                    <div id="@s.Name@s.Id" class="panel-collapse collapse">
+                    <div id="@s.ClientId" class="panel-collapse collapse">
                         <div class="panel-body">
                             @Html.Partial("CompositeObject", s)
                         </div>
@@ -28,12 +29,106 @@
 
             }
         }
+
     </div>
 
 </div>
 
 @section scripts {
     <script type="text/javascript">
+
+        // Create a client instance
+        //client = new Paho.MQTT.Client("host", port, "client_id");
+        //client = new Paho.MQTT.Client("m10.cloudmqtt.com", 36425, "web_1234567"/* + parseInt(Math.random() * 100, 10) */);
+        client = new Paho.MQTT.Client("m10.cloudmqtt.com", 36425, "web_" + parseInt(Math.random() * 100, 10) );
+        //Example client = new Paho.MQTT.Client("m11.cloudmqtt.com", 32903, "web_" + parseInt(Math.random() * 100, 10));
+
+        reconnect();
+
+        // called when the client connects
+        function onConnect() {
+            // Once a connection has been made, make a subscription and send a message.
+            //debugger;
+
+            $("#msg").text("Connected to MQTT server");
+            //client.subscribe("sensor/root/#");
+            client.subscribe("sensor");
+        }
+
+        function doFail(e) {
+            //console.log(e);
+            //debugger;
+            $("#msg").text("Shit happens - " + e.errorMessage);
+        }
+
+        // called when the client loses its connection
+        function onConnectionLost(responseObject) {
+            //debugger;
+            if (responseObject.errorCode !== 0) {
+                //console.log("onConnectionLost:" + responseObject.errorMessage);
+                $("#msg").text("Connection lost");
+            }
+            
+            reconnect();
+        }
+
+        function reconnect() {
+
+            // set callback handlers
+            client.onConnectionLost = onConnectionLost;
+            client.onMessageArrived = onMessageArrived;
+            var options = {
+                cleanSession: false,
+                keepAliveInterval: 6000,
+                useSSL: true,
+                userName: "quefkobd",
+                password: "524rVRkbylHl",
+                onSuccess: onConnect,
+                onFailure: doFail
+            }
+
+            // connect the client
+            client.connect(options);
+        }
+
+        // called when a message arrives
+        function onMessageArrived(message) {            
+            //debugger;
+            var dest = message.destinationName;
+            var ctrl = dest.replace(/\//g, "_")
+
+            var msg = JSON.parse(message.payloadString);
+
+            //$("#" + msg.ClientId).text(msg.Value);
+            $("#" + msg.clientid).replaceWith("<tr id='" + msg.clientid + "'><td>"+ msg.display + "</td><td>" + msg.value + "</td><td>" + msg.time + "</td></tr>");
+
+            @*// здесь надо бы засинхронизировать состояние с сервером
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("SetSensorValue", "Command")',
+                //url: '/api/Command/' + this.id + "/" + this.name,
+                //url: '/api/Command/' + this.id,
+                //dataType: "json",
+                cache: false,
+                contentType: "application/json",
+                data: "{\"sensorId\":\"" + ctrl + "\", \"val\":\"" + message.payloadString + "\" }",
+
+                success: function (data) {
+
+                },
+
+                error: function (data) {
+                    debugger;
+                    alert(data);
+                }
+            });*@
+
+
+        }
+        //
+        //
+        //
+
         var current = null;
         $(function () {
             $(".btn").click(function () {
@@ -95,6 +190,7 @@
             }
         });
     });
+
 
     </script>
 }

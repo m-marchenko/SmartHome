@@ -1,5 +1,6 @@
 ﻿
-@model ICollection<SmartHome.Models.ISensor>
+@using SmartHome.Models.DataContracts;
+@model List<SensorBase>
 @{
 // ViewBag.Title = "Home Page";
 }
@@ -16,10 +17,16 @@
 
         @foreach (var d in Model)
         {
-            <tr>
+            <tr id="@d.ClientId">
                 <td>@d.DisplayName</td>
                 <td>@d.Value</td>
-                <td><nobr>@d.MeasureTime.ToString("dd.MM HH:mm", new System.Globalization.CultureInfo("ru-RU"))</nobr></td>
+                <td><nobr>
+                    @if (d.MeasureTime.HasValue)
+                    {
+                        @d.MeasureTime.Value.ToString("dd.MM HH:mm", new System.Globalization.CultureInfo("ru-RU"));
+                    }
+                    </nobr>
+                </td>
             </tr>
         }
     </tbody>
