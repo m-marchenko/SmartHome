@@ -1,3 +1,5 @@
+#include <ArduinoJson.h>
+
 #include <SoftwareSerial1.h>
 
 #include <OneWire.h>
@@ -183,7 +185,7 @@ class CThermometer {
     
     String toJsonString() {
       //String result = "{\"temperature\":" + String(getTemperature(), DEC) + ", \"time\":\"" + getCurrentTime() + "\" }";      
-      String result = "{\"sensorId\":\"" + m_sensorId + "\", val\":\"" + String(getTemperature(), 0) + "\" }";      
+      String result = "{\"sensorId\":\"" + m_sensorId + "\", \"val\":\"" + String(getTemperature(), 0) + "\" }";      
       return result;
     }
     
@@ -255,7 +257,10 @@ class CDoor {
     m_motor = new CMotor(MOTOR_A_SWITCH_PIN, MOTOR_DIR_FORWARD, MOTOR_DIR_BACKWARD);
     
     pinMode(BUTTON_1_PIN, INPUT);
-    attachInterrupt(0, ButtonPressed, RISING);
+    pinMode(BUTTON_2_PIN, INPUT);
+    
+    attachInterrupt(0, Button1Pressed, RISING);
+    attachInterrupt(1, Button2Pressed, RISING); 
     
     m_state = DOOR_STATE_UNKNOWN;
   }
@@ -421,50 +426,28 @@ class CGreenhouse {
     }
 }; 
 
-class CCommandParser {
+class CJsonCommandParser {
   public: 
     char command[16];
+    const char * target;
+    bool isSuccess = true;
+    
     String params [5];
     int param_num = 0;
+    
+    StaticJsonBuffer<200> jsonBuffer;
 
-    CCommandParser(const char * cmdLine) {
-//      command.reserve(16);
-      
-      int state = 0;    // recieveing command
-      char buff[16];
-      
-      int c = 0;
-      while (*cmdLine != '\n' && *cmdLine != 0) 
-       {
-            if (*cmdLine != ' ' && *cmdLine != ',') {
-                buff[c++] = *(cmdLine++);
-            }
-            else {
-              if (0 == c) { cmdLine++; continue; }  // skip multiple spaces
-              
-              buff[c] = 0;  // terminate string
-              
-              if (0 == state) {
-                strcpy(command, buff);
-                state = 1;  // recieveing parameters
-              }
-              else {
-                params[param_num++] = buff;  
-                if (param_num > 5) break;
-              }
-              c = 0;
-              cmdLine++;
-          }                
-    }       
-        
-      if (c > 0) {
-        buff[c] = 0;
-        if (0 == state)
-          strcpy(command, buff);
-        else
-          params[param_num++] = buff;
-      }
-      
+    CJsonCommandParser(const char * cmdLine) {
+      JsonObject& root = jsonBuffer.parseObject(cmdLine);
+  
+      if (!root.success()) {
+        isSuccess = false;
+        return;    
+      }      
+
+      strncpy(command, root["Command"],16);
+      target = root["Target"];
+                  
     }
 };
 
@@ -474,13 +457,19 @@ CGreenhouse * greenhouse;
 SoftwareSerial softSerial(10, 11); // RX, TX
 
 
-void ButtonPressed() {
+void Button1Pressed() {
 
     //Serial.println("button 1 pressed");    
     
     greenhouse->getDoor()->Stop();
 }
 
+void Button2Pressed() {
+
+    //Serial.println("button 2 pressed");    
+    
+    greenhouse->getDoor()->Stop();
+}
 
 
 //int index(25000);
@@ -490,7 +479,7 @@ void setup() {
   
   // start serial port at 9600 bps:
   Serial.begin(9600);
-  softSerial.begin(9600);
+  //softSerial.begin(9600);
  
   greenhouse = new CGreenhouse();
   
@@ -498,57 +487,61 @@ void setup() {
 
   
 }
+const long interval = 60000;
+unsigned long time_last = 0;
 
 void loop() {
 
-    float current_T = greenhouse->getThermometer()->getTemperature();
+    unsigned long time_now = millis();
+
+    if (time_now - time_last >= interval) {
+        
+        time_last = time_now;
+        
+        float current_T = greenhouse->getThermometer()->getTemperature();
     
-    if (current_T < greenhouse->getLowLimit()) {
-      if (greenhouse->getDoor()->getState() != DOOR_STATE_CLOSED)
-        greenhouse->getDoor()->Close();
-    }
+        if (current_T < greenhouse->getLowLimit()) {
+          if (greenhouse->getDoor()->getState() != DOOR_STATE_CLOSED)
+            greenhouse->getDoor()->Close();
+        }
       
-    if (current_T > greenhouse->getHighLimit()) {
-      if (greenhouse->getDoor()->getState() != DOOR_STATE_OPENED)
-        greenhouse->getDoor()->Open();
+        if (current_T > greenhouse->getHighLimit()) {
+          if (greenhouse->getDoor()->getState() != DOOR_STATE_OPENED)
+            greenhouse->getDoor()->Open();
+        }
+        
+        //if (current_T < greenhouse->getHighLimit() &&  current_T > greenhouse->getLowLimit())
+        //   greenhouse->getDoor()->Stop();
+    
+        Serial.write((greenhouse->getThermometer()->toJsonString() + "\r").c_str());
     }
-    
-    //if (current_T < greenhouse->getHighLimit() &&  current_T > greenhouse->getLowLimit())
-    //   greenhouse->getDoor()->Stop();
-
-//softSerial.write("testing...");
-    //softSerial.write((greenhouse->getThermometer()->toJsonString()).c_str());
-    
-    Serial.println(greenhouse->getThermometer()->toJsonString());
-    
-    delay(10000);
-  // }
-  
-
 }
 
 
 // Available commands:
 // set_range lo, hi  - set range of temperature 
-// open_door
-// close_door
+// opendoor
+// closedoor
 // stop_door
-// fill_barrel
-// empty_barrel
-// close_barrel
+// fill
+// empty
+// block
+String _command;
 void serialEvent() {
-  String command;
+  
   while (Serial.available()) {
     // get the new byte:
     char inChar = (char)Serial.read();
     // add it to the inputString:
-    command += inChar;
+    _command += inChar;
     // if the incoming character is a newline, set a flag
     // so the main loop can do something about it:
+    //Serial.print(inChar);
     if (inChar == '\n') {      
-      Serial.println("Input: " + command);
+      Serial.println("Input: " + _command);
       
-      CCommandParser *cmd = new CCommandParser(command.c_str());            
+      CJsonCommandParser *cmd = new CJsonCommandParser(_command.c_str());            
+      _command = "";
       
       if (strcmp(cmd->command, "set_range") == 0){
         float lo = atof((cmd->params[0]).c_str());
@@ -556,22 +549,22 @@ void serialEvent() {
         
         greenhouse->setOpenRange(lo, hi);        
       } else
-      if (strcmp(cmd->command, "open_door") == 0){
+      if (strcmp(cmd->command, "opendoor") == 0){
         greenhouse->getDoor()->Open();
       } else
-      if (strcmp(cmd->command, "close_door") == 0){
+      if (strcmp(cmd->command, "closedoor") == 0){
         greenhouse->getDoor()->Close();
       } else
       if (strcmp(cmd->command, "stop_door") == 0){
         greenhouse->getDoor()->Stop();
       } else
-      if (strcmp(cmd->command, "fill_barrel") == 0){
+      if (strcmp(cmd->command, "fill") == 0){
         greenhouse->fillBarrel();
       } else
-      if (strcmp(cmd->command, "empty_barrel") == 0){
+      if (strcmp(cmd->command, "empty") == 0){
         greenhouse->emptyBarrel();
       } else
-      if (strcmp(cmd->command, "close_barrel") == 0){
+      if (strcmp(cmd->command, "block") == 0){
         greenhouse->closeBarrel();
       } else
       {
