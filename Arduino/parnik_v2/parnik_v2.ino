@@ -270,30 +270,34 @@ class CDoor {
   }
   void Open(){
     m_motor->Stop();
-    delay(500);
+    delay(1000);
+
+    m_motor->runForward();
     
-    if (DOOR_STATE_OPENED != m_state) {
-      m_motor->runForward();    
-      m_state = DOOR_STATE_OPENING;
-    }
+    //if (DOOR_STATE_OPENED != m_state) {
+    //  m_motor->runForward();    
+    //  m_state = DOOR_STATE_OPENING;
+    //}
 
   }
   
   void Close() {
     m_motor->Stop();
-    delay(500);
+    delay(1000);
+
+    m_motor->runBackward();
     
-    if (DOOR_STATE_CLOSED != m_state) {
-      m_motor->runBackward();        
-      m_state = DOOR_STATE_CLOSING;
-    }
+    //if (DOOR_STATE_CLOSED != m_state) {
+    //  m_motor->runBackward();        
+    //  m_state = DOOR_STATE_CLOSING;
+    //}
   }
     
   void Stop() {
     m_motor->Stop();
     
-    if (DOOR_STATE_CLOSING == m_state) m_state = DOOR_STATE_CLOSED; else
-    if (DOOR_STATE_OPENING == m_state) m_state = DOOR_STATE_OPENED;
+    //if (DOOR_STATE_CLOSING == m_state) m_state = DOOR_STATE_CLOSED; else
+    //if (DOOR_STATE_OPENING == m_state) m_state = DOOR_STATE_OPENED;
   }
   
   byte getState() {
@@ -492,12 +496,14 @@ unsigned long time_last = 0;
 
 void loop() {
 
+    __serialEvent1();
+    
     unsigned long time_now = millis();
 
     if (time_now - time_last >= interval) {
         
         time_last = time_now;
-        
+        /*
         float current_T = greenhouse->getThermometer()->getTemperature();
     
         if (current_T < greenhouse->getLowLimit()) {
@@ -509,11 +515,13 @@ void loop() {
           if (greenhouse->getDoor()->getState() != DOOR_STATE_OPENED)
             greenhouse->getDoor()->Open();
         }
-        
+        */
         //if (current_T < greenhouse->getHighLimit() &&  current_T > greenhouse->getLowLimit())
         //   greenhouse->getDoor()->Stop();
     
         Serial.write((greenhouse->getThermometer()->toJsonString() + "\r").c_str());
+
+        delay(1000);
     }
 }
 
@@ -526,8 +534,8 @@ void loop() {
 // fill
 // empty
 // block
-String _command;
-void serialEvent() {
+String _command = "";
+void __serialEvent1() {
   
   while (Serial.available()) {
     // get the new byte:
@@ -537,8 +545,14 @@ void serialEvent() {
     // if the incoming character is a newline, set a flag
     // so the main loop can do something about it:
     //Serial.print(inChar);
-    if (inChar == '\n') {      
-      Serial.println("Input: " + _command);
+    if (inChar == '\r' || inChar == '\n') {
+      if (_command.length() < 3) 
+      { 
+        _command = ""; 
+        return; 
+      }
+      
+      Serial.print("Input: " + _command + "\r");
       
       CJsonCommandParser *cmd = new CJsonCommandParser(_command.c_str());            
       _command = "";
@@ -555,7 +569,7 @@ void serialEvent() {
       if (strcmp(cmd->command, "closedoor") == 0){
         greenhouse->getDoor()->Close();
       } else
-      if (strcmp(cmd->command, "stop_door") == 0){
+      if (strcmp(cmd->command, "stopdoor") == 0){
         greenhouse->getDoor()->Stop();
       } else
       if (strcmp(cmd->command, "fill") == 0){
@@ -568,11 +582,11 @@ void serialEvent() {
         greenhouse->closeBarrel();
       } else
       {
-        Serial.println("Command " + String(cmd->command) + " is undefined");
+        Serial.print("Command " + String(cmd->command) + " is undefined\r");
       }
       
       
-      Serial.println("Command " + String(cmd->command) + " executed");
+      Serial.print("Command " + String(cmd->command) + " is executed\r");
       
 //      ExecuteCommand(cmd);
       

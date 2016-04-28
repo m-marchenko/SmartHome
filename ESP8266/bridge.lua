@@ -1,4 +1,13 @@
 require('httpclient')
+function mqttconnect(client)
+client:connect("m10.cloudmqtt.com", 16425, 0, 
+  function(client)
+   client:subscribe("root/parnik1/#",0, function(client)  end)
+   gpio.write(2, gpio.LOW)
+  end, 
+  function(client, reason) print("failed reason: "..reason) end)
+end
+
 local pin=4 -- GPIO2
 gpio.mode(pin, gpio.INPUT)
 
@@ -20,14 +29,16 @@ local client=mqtt.Client("parnik1", 6000, "quefkobd", "524rVRkbylHl")
 client:on("connect", function(client)  end)
 client:on("message", function(client, topic, data)  
   if data ~= nil then
-    print(data.."\n")
+    print(data.."\r")
   end
 end)
-client:connect("m10.cloudmqtt.com", 16425, 0, 
-  function(client)
-   client:subscribe("root/parnik1/#",0, function(client)  end)
-  end, 
-  function(client, reason) print("failed reason: "..reason) end)
+
+client:on("offline", function(client) 
+gpio.write(2, gpio.HIGH)
+mqttconnect(client) 
+end)
+
+mqttconnect(client)
 
 uart.on("data", "\r",function(data) 
 ok, json = pcall(cjson.decode, data)
@@ -40,3 +51,4 @@ else
 client:publish("error", data, 0, 0)
 end
 end, 0)
+
