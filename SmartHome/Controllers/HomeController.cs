@@ -46,6 +46,14 @@ namespace SmartHome.Controllers
             return View();
         }
 
+        public ActionResult Refresh(string id)
+        {
+            var unit = _root.FindUnit(id);
+
+            return PartialView("Sensors", unit.Sensors);
+
+        }
+
         public ActionResult About()
         {
             ViewBag.Message = "Your application description page.";
