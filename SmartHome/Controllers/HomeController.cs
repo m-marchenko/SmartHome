@@ -1,4 +1,5 @@
-﻿using SmartHome.Models;
+﻿using log4net;
+using SmartHome.Models;
 using SmartHome.Models.DataContracts;
 using System;
 using System.Collections.Generic;
@@ -11,11 +12,13 @@ using System.Xml.Serialization;
 
 namespace SmartHome.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
         //private IRootObject _root;
+        private static ILog _logger = LogManager.GetLogger("HomeController");
 
-        private static RootUnit _root;
+        private  RootUnit _root;
 
         public HomeController(RootUnit root)
         {
@@ -48,6 +51,8 @@ namespace SmartHome.Controllers
 
         public ActionResult Refresh(string id)
         {
+            _logger.DebugFormat("Trying to refresh unit {0}", id);
+
             var unit = _root.FindUnit(id);
 
             return PartialView("Sensors", unit.Sensors);

@@ -20,6 +20,8 @@ namespace SmartHome
             BundleConfig.RegisterBundles(BundleTable.Bundles);
 
             DependencyConfig.RegisterDependencyResolvers();
+
+            log4net.Config.XmlConfigurator.Configure();
         }
     }
 }

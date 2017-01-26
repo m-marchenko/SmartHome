@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using log4net;
+using Newtonsoft.Json;
 using SmartHome.Models;
 using SmartHome.Models.DataContracts;
 using System;
@@ -26,6 +27,8 @@ namespace SmartHome.Controllers
         private static MqttClient _mqtt;
 
         private static object _sync = new object();
+
+        private static ILog _logger = LogManager.GetLogger("CommandController");
 
         public CommandController(RootUnit root)
         {
@@ -90,9 +93,14 @@ namespace SmartHome.Controllers
         [HttpPost]
         public void SetSensorValue(string sensorId, string val)
         {
+            _logger.DebugFormat("Start setting sensor {0} value to {1}", sensorId, val);
+
             var sensor = _root.FindSensor(sensorId);
             if (sensor == null)
+            {
+                _logger.DebugFormat("Sensor {0} not found", sensorId);
                 return;
+            }
 
             sensor.Value = val;
             sensor.MeasureTime = DateTime.UtcNow.AddHours(3);
@@ -104,7 +112,7 @@ namespace SmartHome.Controllers
                 _mqtt.Publish("sensor", Encoding.UTF8.GetBytes(msg));
             }
 
-
+            _logger.DebugFormat("Setting sensor {0} value to {1} successfully finished", sensorId, val);
         }
     }
 }
