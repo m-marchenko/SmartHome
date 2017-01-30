@@ -58,11 +58,12 @@ namespace SmartHome
 
         private static void RegisterDependencyMappingOverrides(ContainerBuilder builder)
         {
+            /*
             var root = (RootUnit)(ConfigurationManager.GetSection("RootUnit"));
             root.UpdateParents();
 
             builder.RegisterInstance<RootUnit>(root);
-
+            */
             //builder.RegisterType<Fazenda>().As<IRootObject>().SingleInstance();
         }
     }
