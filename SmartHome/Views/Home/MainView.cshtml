@@ -8,7 +8,7 @@
 
     <div class="panel-group" id="accordion">
         <div class="panel panel-primary">
-            <div class="panel-heading"><nobr><div class=" pull-left"><b>@Model.DisplayName</b></div><div class="text-right"><span id="refresh" class="glyphicon glyphicon-refresh" style="cursor: pointer"></span></div></nobr></div>
+            <div class="panel-heading"><h4>@Model.DisplayName </h4></div>
         </div>
 
         @{
@@ -159,7 +159,7 @@
 
             $("a").click(function () { current = this.name; });
 
-        $("#refresh").click(function () {
+        @*$("#refresh").click(function () {
             //debugger;
             if (current != null) {
                 //alert("refreshing " + current);
@@ -188,9 +188,36 @@
                 });
 
             }
-        });
+        });*@
     });
 
+        function refreshObject(clientid) {
 
+            //alert(clientid);
+
+            $.ajax({
+                type: 'GET',
+                url: '@Url.Action("Refresh")/' + clientid,
+                cache: false,
+                beforeSend: function () {
+                    //$("#mbbusy").show();
+                },
+                complete: function () {
+                    //$("#mbbusy").hide();
+                },
+
+                success: function (data) {
+                    //debugger;
+                    //alert(data);
+                    // заменяем содержимое присланным частичным представлением
+                    $('#sensorsU_' + clientid).replaceWith(data);
+                    //alert($(".mbselect").length);
+                },
+                error: function (err) {
+                    //debugger;
+                }
+            });
+
+        }
     </script>
 }

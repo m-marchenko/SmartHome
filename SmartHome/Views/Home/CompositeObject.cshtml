@@ -4,7 +4,6 @@
 // ViewBag.Title = "Home Page";
 }
 
-
     <div id="@Model.Name">
     @if (Model.Units.Count > 0)
     {
@@ -20,8 +19,8 @@
 
                 @if (Model.Sensors.Count > 0)
                 {
-                    <li class="active">
-                        <a name='@Model.Name' data-toggle="tab" href="#sensors_@Model.ClientId">Датчики</a>
+                    <li class="active">                        
+                        <a name='@Model.Name' data-toggle="tab" href="#sensors_@Model.ClientId">Датчики</a>             
                     </li>
                 }
             </ul>
@@ -35,9 +34,12 @@
                 }
                 @if (Model.Sensors.Count > 0)
                 {
-                    <div id='sensors_@Model.ClientId' class="tab-pane fade in active">
-                        @*<h4>@Model.DisplayName - показания датчиков</h4>*@
-                        @Html.Partial("Sensors", Model.Sensors)
+                    
+                    <div id='sensors_@Model.ClientId' class="tab-pane fade in active">    
+                        <div id='sensorsU_@Model.ClientId'>
+                            @*<h4>@Model.DisplayName - показания датчиков</h4>*@
+                            @Html.Partial("Sensors", Model.Sensors)
+                        </div>
                     </div>
                 }
 
@@ -48,8 +50,10 @@
     else
     {
         @*<h4>@Model.DisplayName - показания датчиков</h4>*@
-        @Html.Partial("Sensors", Model.Sensors)
 
+        <div id='sensorsU_@Model.ClientId' >
+            @Html.Partial("Sensors", Model.Sensors)
+        </div>
     }
 
     @if (Model.Commands.Count > 0)

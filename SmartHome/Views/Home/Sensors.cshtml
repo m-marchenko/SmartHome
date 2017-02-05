@@ -2,32 +2,37 @@
 @using SmartHome.Models.DataContracts;
 @model List<SensorBase>
 @{
-// ViewBag.Title = "Home Page";
+    // ViewBag.Title = "Home Page";
+    //ViewData["modelId"] = Model[0].Parent.ClientId;
 }
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Параметр</th>
-            <th>Значение</th>
-            <th>Время</th>
-        </tr>
-    </thead>
-    <tbody>
 
-        @foreach (var d in Model)
-        {
-            <tr id="@d.ClientId">
-                <td>@d.DisplayName</td>
-                <td>@d.Value</td>
-                <td><nobr>
-                    @if (d.MeasureTime.HasValue)
-                    {
-                        @d.MeasureTime.Value.ToString("dd.MM HH:mm", new System.Globalization.CultureInfo("ru-RU"));
-                    }
-                    </nobr>
-                </td>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Параметр</th>
+                <th>Значение</th>
+                <th>Время</th>
+                <th><div class="text-right"><a href="#" class="btn btn-xs btn-info" onclick="refreshObject('@Model[0].Parent.ClientId')"><span class="glyphicon glyphicon-refresh"></span></a></div></th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+
+            @foreach (var d in Model)
+            {
+                <tr id="@d.ClientId">
+                    <td>@d.DisplayName</td>
+                    <td>@d.Value</td>
+                    <td>
+                        <nobr>
+                            @if (d.MeasureTime.HasValue)
+                            {
+                                @d.MeasureTime.Value.ToString("dd.MM HH:mm", new System.Globalization.CultureInfo("ru-RU"));
+                            }
+                        </nobr>
+                    </td>
+                    <td>&nbsp;</td>
+                </tr>
+            }
+        </tbody>
+    </table>

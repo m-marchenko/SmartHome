@@ -1,4 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using log4net;
+using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.Owin;
+using Newtonsoft.Json;
 using SmartHome.Models;
 using SmartHome.Models.DataContracts;
 using System;
@@ -9,6 +12,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Web;
 //using System.Web.Http;
 using System.Web.Mvc;
 using uPLibrary.Networking.M2Mqtt;
@@ -27,9 +31,17 @@ namespace SmartHome.Controllers
 
         private static object _sync = new object();
 
-        public CommandController(RootUnit root)
+        private static ILog _logger = LogManager.GetLogger("CommandController");
+
+        public CommandController()
         {
-            _root = root;
+            var user = System.Web.HttpContext.Current.GetOwinContext().GetUserManager<SmartHomeUserManager>().FindByName(System.Web.HttpContext.Current.User.Identity.Name);
+
+            if (user != null && user.Profiles.Any())
+            {
+                _root = user.Profiles.Where(p => p.Name == user.DefaultProfileName).FirstOrDefault();
+                _root.UpdateParents();
+            }            
 
             if (_mqtt == null)
             {
@@ -71,7 +83,13 @@ namespace SmartHome.Controllers
                 //_mqtt.Publish("command/" + target.Replace("_", "/"), Encoding.ASCII.GetBytes(cmd));
 
                 var cmd = JsonConvert.SerializeObject(new { Command = command, Target = unit.Id });
-                var topic = unit.ClientId.Replace("_", "/");
+
+                //var user = User.Identity.GetUserName();
+                var manager = HttpContext.GetOwinContext().GetUserManager<SmartHomeUserManager>();
+
+                SmartHomeUser user = System.Web.HttpContext.Current.GetOwinContext().GetUserManager<SmartHomeUserManager>().FindById(System.Web.HttpContext.Current.User.Identity.GetUserId());
+
+                var topic = String.Format("{0}/{1}", user.UserName, unit.ClientId.Replace("_", "/"));
 
                 _mqtt.Publish(topic, Encoding.UTF8.GetBytes(cmd));
             }
@@ -90,9 +108,14 @@ namespace SmartHome.Controllers
         [HttpPost]
         public void SetSensorValue(string sensorId, string val)
         {
+            _logger.DebugFormat("Start setting sensor {0} value to {1}", sensorId, val);
+
             var sensor = _root.FindSensor(sensorId);
             if (sensor == null)
+            {
+                _logger.DebugFormat("Sensor {0} not found", sensorId);
                 return;
+            }
 
             sensor.Value = val;
             sensor.MeasureTime = DateTime.UtcNow.AddHours(3);
@@ -104,7 +127,7 @@ namespace SmartHome.Controllers
                 _mqtt.Publish("sensor", Encoding.UTF8.GetBytes(msg));
             }
 
-
+            _logger.DebugFormat("Setting sensor {0} value to {1} successfully finished", sensorId, val);
         }
     }
 }

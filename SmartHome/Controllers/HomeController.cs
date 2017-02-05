@@ -1,4 +1,7 @@
-﻿using SmartHome.Models;
+﻿using log4net;
+using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.Owin;
+using SmartHome.Models;
 using SmartHome.Models.DataContracts;
 using System;
 using System.Collections.Generic;
@@ -11,15 +14,27 @@ using System.Xml.Serialization;
 
 namespace SmartHome.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
         //private IRootObject _root;
+        private static ILog _logger = LogManager.GetLogger("HomeController");
 
-        private static RootUnit _root;
+        private  RootUnit _root;
 
-        public HomeController(RootUnit root)
+        //public HomeController(RootUnit root)
+        public HomeController()
         {
-              _root = root;
+
+            var user = System.Web.HttpContext.Current.GetOwinContext().GetUserManager<SmartHomeUserManager>().FindByName(System.Web.HttpContext.Current.User.Identity.Name);
+
+            if (user != null && user.Profiles.Any())
+            {
+                _root = user.Profiles.Where(p => p.Name == user.DefaultProfileName).FirstOrDefault();
+                _root.UpdateParents();
+            }
+
+            //_root = root;
 
             //if (_root != null) return;
 
@@ -44,6 +59,16 @@ namespace SmartHome.Controllers
         public ActionResult Index()
         {
             return View();
+        }
+
+        public ActionResult Refresh(string id)
+        {
+            _logger.DebugFormat("Trying to refresh unit {0}", id);
+
+            var unit = _root.FindUnit(id);
+
+            return PartialView("Sensors", unit.Sensors);
+
         }
 
         public ActionResult About()
