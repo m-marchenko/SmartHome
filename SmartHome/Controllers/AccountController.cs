@@ -57,7 +57,7 @@ namespace SmartHome.Controllers
                 }
                 else
                 {
-                    ModelState.AddModelError("", "Invalid username or password.");
+                    ModelState.AddModelError("", "Неверная комбинация <имя пользователя / пароль>");
                 }
             }
 
@@ -97,7 +97,7 @@ namespace SmartHome.Controllers
             }
             else
             {
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("MainView", "Home");
             }
         }
 

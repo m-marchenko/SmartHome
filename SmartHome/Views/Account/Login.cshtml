@@ -1,7 +1,7 @@
 ﻿@model SmartHome.Models.LoginViewModel
 
 @{
-    ViewBag.Title = "Log in";
+    ViewBag.Title = "Вход в систему";
 }
 
 <h2>@ViewBag.Title.</h2>
@@ -10,8 +10,7 @@
         <section id="loginForm">
             @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
             {
-                @Html.AntiForgeryToken()
-                <h4>Use a local account to log in.</h4>
+                @Html.AntiForgeryToken()                
                 <hr />
                 @Html.ValidationSummary(true)
                 <div class="form-group">
@@ -30,7 +29,7 @@
                 </div>
                 <div class="form-group">
                     <div class="col-md-offset-2 col-md-10">
-                        <input type="submit" value="Log in" class="btn btn-default" />
+                        <input type="submit" value="Вход" class="btn btn-default" />
                     </div>
                 </div>
               

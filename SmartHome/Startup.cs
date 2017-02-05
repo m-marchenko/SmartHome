@@ -4,6 +4,7 @@ using Microsoft.Owin;
 using Owin;
 using Microsoft.Owin.Security.Cookies;
 using Microsoft.AspNet.Identity;
+using SmartHome.Models;
 
 [assembly: OwinStartup(typeof(SmartHome.Startup))]
 
@@ -22,6 +23,7 @@ namespace SmartHome
                 LoginPath = new PathString("/Account/Login")
             });
 
+            app.CreatePerOwinContext<SmartHomeUserManager>(() => { return new SmartHomeUserManager(); });
         }
     }
 }

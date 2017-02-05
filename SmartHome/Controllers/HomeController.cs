@@ -1,4 +1,6 @@
 ﻿using log4net;
+using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.Owin;
 using SmartHome.Models;
 using SmartHome.Models.DataContracts;
 using System;
@@ -20,9 +22,19 @@ namespace SmartHome.Controllers
 
         private  RootUnit _root;
 
-        public HomeController(RootUnit root)
+        //public HomeController(RootUnit root)
+        public HomeController()
         {
-              _root = root;
+
+            var user = System.Web.HttpContext.Current.GetOwinContext().GetUserManager<SmartHomeUserManager>().FindByName(System.Web.HttpContext.Current.User.Identity.Name);
+
+            if (user != null && user.Profiles.Any())
+            {
+                _root = user.Profiles.Where(p => p.Name == user.DefaultProfileName).FirstOrDefault();
+                _root.UpdateParents();
+            }
+
+            //_root = root;
 
             //if (_root != null) return;
 
