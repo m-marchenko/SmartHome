@@ -69,7 +69,7 @@ namespace SmartHome.Controllers
         /// </summary>
         /// <param name="command">Имя команды</param>
         /// <param name="target">ClientId объекта, содержащего команду</param>
-        [HttpPost]        
+        [HttpPost]
         public void SendCommand(string command, string target)
         {
             var unit = _root.FindUnit(target);
@@ -77,22 +77,25 @@ namespace SmartHome.Controllers
 
             _commands.AddOrUpdate(target, command, (k, v) => command);
 
-            if (_mqtt.IsConnected)
+            if (!_mqtt.IsConnected)
             {
-                //var cmd = String.Format("{{\"command\":\"{0}\", \"target\":\"{1}\"}}", command, target);
-                //_mqtt.Publish("command/" + target.Replace("_", "/"), Encoding.ASCII.GetBytes(cmd));
-
-                var cmd = JsonConvert.SerializeObject(new { Command = command, Target = unit.Id });
-
-                //var user = User.Identity.GetUserName();
-                var manager = HttpContext.GetOwinContext().GetUserManager<SmartHomeUserManager>();
-
-                SmartHomeUser user = System.Web.HttpContext.Current.GetOwinContext().GetUserManager<SmartHomeUserManager>().FindById(System.Web.HttpContext.Current.User.Identity.GetUserId());
-
-                var topic = String.Format("{0}/{1}", user.UserName, unit.ClientId.Replace("_", "/"));
-
-                _mqtt.Publish(topic, Encoding.UTF8.GetBytes(cmd));
+                MqttReconnect(null, null);
             }
+
+            //var cmd = String.Format("{{\"command\":\"{0}\", \"target\":\"{1}\"}}", command, target);
+            //_mqtt.Publish("command/" + target.Replace("_", "/"), Encoding.ASCII.GetBytes(cmd));
+
+            var cmd = JsonConvert.SerializeObject(new { Command = command, Target = unit.Id });
+
+            //var user = User.Identity.GetUserName();
+            var manager = HttpContext.GetOwinContext().GetUserManager<SmartHomeUserManager>();
+
+            SmartHomeUser user = System.Web.HttpContext.Current.GetOwinContext().GetUserManager<SmartHomeUserManager>().FindById(System.Web.HttpContext.Current.User.Identity.GetUserId());
+
+            var topic = String.Format("{0}/{1}/{2}", user.UserName, user.DefaultProfileName, unit.ClientId.Replace("_", "/"));
+
+            _mqtt.Publish(topic, Encoding.UTF8.GetBytes(cmd));
+
         }
 
         [HttpPost]
