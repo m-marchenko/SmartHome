@@ -48,7 +48,7 @@
         // called when the client connects
         function onConnect() {
             // Once a connection has been made, make a subscription and send a message.
-            //debugger;
+            debugger;
 
             $("#msg").text("Connected to MQTT server");
             //client.subscribe("sensor/root/#");
@@ -93,7 +93,7 @@
 
         // called when a message arrives
         function onMessageArrived(message) {            
-            //debugger;
+            debugger;
             var dest = message.destinationName;
             var ctrl = dest.replace(/\//g, "_")
 
