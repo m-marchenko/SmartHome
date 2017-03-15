@@ -40,7 +40,7 @@
         // Create a client instance
         //client = new Paho.MQTT.Client("host", port, "client_id");
         //client = new Paho.MQTT.Client("m10.cloudmqtt.com", 36425, "web_1234567"/* + parseInt(Math.random() * 100, 10) */);
-        client = new Paho.MQTT.Client("m10.cloudmqtt.com", 36425, "web_" + parseInt(Math.random() * 100, 10) );
+        client = new Paho.MQTT.Client("m10.cloudmqtt.com", 36425, "web1_" + @DateTime.Now.Ticks);//parseInt(Math.random() * 100, 10) );
         //Example client = new Paho.MQTT.Client("m11.cloudmqtt.com", 32903, "web_" + parseInt(Math.random() * 100, 10));
 
         reconnect();
@@ -48,11 +48,11 @@
         // called when the client connects
         function onConnect() {
             // Once a connection has been made, make a subscription and send a message.
-            debugger;
+            //debugger;
 
             $("#msg").text("Connected to MQTT server");
             //client.subscribe("sensor/root/#");
-            client.subscribe("sensor");
+            client.subscribe("testingsensors");
         }
 
         function doFail(e) {
@@ -93,7 +93,7 @@
 
         // called when a message arrives
         function onMessageArrived(message) {            
-            debugger;
+            //debugger;
             var dest = message.destinationName;
             var ctrl = dest.replace(/\//g, "_")
 

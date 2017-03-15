@@ -61,7 +61,17 @@ namespace SmartHome.Controllers
 
         private void MqttReconnect(object sender, EventArgs e)
         {
-            _mqtt.Connect("my_unique_identifier", ConfigurationManager.AppSettings["mqtt:user"], ConfigurationManager.AppSettings["mqtt:password"]);
+            _mqtt.Connect("my_unique_identifier_" + DateTime.Now.Ticks.ToString(), ConfigurationManager.AppSettings["mqtt:user"], ConfigurationManager.AppSettings["mqtt:password"]);
+            _mqtt.Subscribe(new string[] { "sensor" }, new byte[] { 0 });
+            _mqtt.MqttMsgPublishReceived += (s, args) =>
+            {
+                var topic = args.Topic;
+                var msg = Encoding.UTF8.GetString(args.Message);
+
+                var dto = JsonConvert.DeserializeObject<SensorTO>(msg);
+
+                SetSensorValue(dto.SensorId, dto.SensorValue);
+            };
         }
 
         /// <summary>
@@ -124,10 +134,19 @@ namespace SmartHome.Controllers
             {
                 //var msg = JsonConvert.SerializeObject(sensor);
                 var msg = JsonConvert.SerializeObject(new  { clientid = sensor.ClientId, display = sensor.DisplayName, value = sensor.Value, time = sensor.MeasureTime.Value.ToString("dd.MM HH:mm", new System.Globalization.CultureInfo("ru-RU")) });
-                _mqtt.Publish("sensor", Encoding.UTF8.GetBytes(msg));
+                _mqtt.Publish("testingsensors", Encoding.UTF8.GetBytes(msg));
             }
 
             _logger.DebugFormat("Setting sensor {0} value to {1} successfully finished", sensorId, val);
+        }
+
+        public class SensorTO
+        {
+            [JsonProperty(PropertyName = "sensorId")]
+            public string SensorId { get; set; }
+
+            [JsonProperty(PropertyName = "val")]
+            public string SensorValue { get; set; }
         }
     }
 }
