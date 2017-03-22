@@ -22,9 +22,239 @@
   - Select your ESP8266 in "Tools -> Board"
 
 */
+#include <string.h>
+#include <stdlib.h>
+#include <ArduinoJson.h>
 
 #include <ESP8266WiFi.h>
+#include <ESP8266HTTPClient.h>
 #include <PubSubClient.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
+
+#define GPIO2 2
+#define BUILTIN_LED GPIO2
+
+#define DS18B20_PIN 2  // DS18B20 pin
+#define TEMPERATURE_PRECISION 3
+#define DS18B20_ID  "TM0002"
+
+//OneWire oneWire(ONE_WIRE_BUS);
+//DallasTemperature sensors(&oneWire);
+
+class CThermometer {
+  private:
+    String info;
+    DallasTemperature *sensor;  
+    OneWire *oneWire;
+    DeviceAddress thermometer;
+    String m_sensorId;
+
+  public:
+    // .ctor
+    CThermometer(byte pin, String id) {      
+      oneWire = new OneWire(pin);      
+      m_sensorId = id;
+      
+      sensor = new DallasTemperature(oneWire);    
+      sensor->begin();
+      
+      if(sensor->getDeviceCount() == 0)
+      {
+        info = "No temperature sensors found";
+        return;
+      }
+      
+      if (!sensor->getAddress(thermometer, 0))
+      {
+        info = "Unable to get sensor address";
+        return;
+      }
+      
+      sensor->setResolution(thermometer, TEMPERATURE_PRECISION);
+      
+      info = "Thermometer successfully initialized";
+    }
+
+    float getTemperature() {
+       sensor->requestTemperatures();
+       //float value = sensor->getTempC(thermometer);
+       float value = sensor->getTempCByIndex(0);
+       return value;
+    }
+    
+    String toJsonString() {      
+      String result = "{\"sensorId\":\"" + m_sensorId + "\", \"val\":\"" + String(getTemperature(), 0) + "\" }";      
+      return result;
+    }
+    
+    String getStatusInfo() {
+      return info;
+    }
+
+};
+
+#define VALVE_STATE_UNKNOWN  0
+#define VALVE_STATE_OPENED   1
+#define VALVE_STATE_CLOSED   2
+
+class CValve {
+  private:
+    byte m_relayPin;
+    byte m_statePin;
+    
+ public:
+   CValve(byte relaypin, byte statepin) {
+     m_relayPin = relaypin;
+     m_statePin = statepin;
+     pinMode(m_relayPin, INPUT);
+     pinMode(m_statePin, INPUT);          
+   }
+  
+  void Open() {
+    pinMode(m_relayPin, OUTPUT);
+    digitalWrite(m_relayPin, LOW);    
+  }
+
+  void Close() {
+    pinMode(m_relayPin, OUTPUT);
+    digitalWrite(m_relayPin, HIGH);    
+  }
+
+  int getState() {
+    int state = digitalRead(m_statePin);  
+
+    Serial.print("pin:"); Serial.print(m_statePin); Serial.print(" state:"); Serial.print(state);
+    Serial.println();
+
+    if (state == HIGH)
+      return VALVE_STATE_OPENED;
+    else
+      return VALVE_STATE_CLOSED;
+
+  }
+  
+  String toJsonString() {
+    String result = "{\"state\":" + String(getState(), DEC) + "}";
+    
+    return result;
+  }
+  
+};
+
+class CLevelSensor{
+
+  public:
+    CLevelSensor(){
+      
+    }
+
+    // возвращает уровень в процентах
+    int getLevelValue(){
+      return 60;
+    }
+};
+
+#define VALVE_PIN_TOP     5
+#define VALVE_STATE_PIN_TOP 12
+#define VALVE_PIN_BOTTOM  14
+#define VALVE_STATE_PIN_BOTTOM 13
+
+#define ISBLOCKED 0
+#define ISFILLING 1
+#define ISEMPTIED 2
+
+class CBarrel {
+  private:
+    CValve * m_bottomValve;
+    CValve * m_topValve;
+    CLevelSensor m_level;
+    String m_stateSensorId;
+    
+  public:
+    CBarrel(String stateSensorId){
+      m_stateSensorId = stateSensorId;
+      m_bottomValve = new CValve(VALVE_PIN_BOTTOM, VALVE_STATE_PIN_BOTTOM);
+      m_topValve = new CValve(VALVE_PIN_TOP, VALVE_STATE_PIN_TOP);
+    }
+    
+    void Fill(){
+      m_bottomValve->Close();
+      m_topValve->Open();    
+      Serial.println("Barrel is being filled");
+    }
+
+    void Empty(){
+      m_bottomValve->Open();
+      m_topValve->Close();            
+      Serial.println("Barrel is being unloaded");
+    }
+
+    void Block(){
+      m_bottomValve->Close();
+      m_topValve->Close();            
+      Serial.println("Barrel valves are closed");
+    }
+
+    int getState()
+    {
+      if (m_bottomValve->getState() == VALVE_STATE_OPENED)
+        return ISEMPTIED;
+      else
+        if (m_topValve->getState() == VALVE_STATE_OPENED)
+          return ISFILLING;
+        
+      return ISBLOCKED;
+    }
+
+    String toJsonString() {
+      int state = getState();
+      String stateStr;
+      switch (state)
+      {
+        case ISEMPTIED:
+          stateStr = "сливается";
+          break;
+        case ISFILLING:
+          stateStr = "наполняется";
+          break;
+        case ISBLOCKED:
+          stateStr = "перекрыта";
+          break;
+        
+      }
+            
+      String result = "{\"sensorId\":\"" + m_stateSensorId + "\", \"val\":\"" + stateStr + "\" }";      
+      return result;
+    }
+
+};
+
+class CJsonCommandParser {
+  public: 
+    char command[16];
+    char target[16];
+    bool isSuccess = true;
+    
+    String params [5];
+    int param_num = 0;
+    
+    StaticJsonBuffer<200> jsonBuffer;
+
+    CJsonCommandParser(const char * cmdLine) {
+      JsonObject& root = jsonBuffer.parseObject(cmdLine);
+  
+      if (!root.success()) {
+        isSuccess = false;
+        return;    
+      }      
+
+      strncpy(command, root["Command"],16);
+      strcpy(target, root["Target"]);
+                  
+    }
+};
+
 
 // Update these with values suitable for your network.
 
@@ -42,12 +272,20 @@ long lastMsg = 0;
 char msg[50];
 int value = 0;
 
+CThermometer *thermometer;
+CBarrel *barrel;
+
 void setup() {
   pinMode(BUILTIN_LED, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
   Serial.begin(9600);
   setup_wifi();
   client.setServer(mqtt_server, 16425);
   client.setCallback(callback);
+
+  thermometer = new CThermometer(DS18B20_PIN, String(DS18B20_ID));
+  barrel = new CBarrel("BST0001");
+
+  //sensors.begin();
 }
 
 void setup_wifi() {
@@ -80,15 +318,28 @@ void callback(char* topic, byte* payload, unsigned int length) {
   }
   Serial.println();
 
-  // Switch on the LED if an 1 was received as first character
-  if ((char)payload[0] == '1') {
-    digitalWrite(BUILTIN_LED, LOW);   // Turn the LED on (Note that LOW is the voltage level
-    // but actually the LED is on; this is because
-    // it is acive low on the ESP-01)
-  } else {
-    digitalWrite(BUILTIN_LED, HIGH);  // Turn the LED off by making the voltage HIGH
-  }
+  CJsonCommandParser *cmd = new CJsonCommandParser((const char * )payload);
 
+  Serial.printf("%s recieved command '%s'\r\n", cmd->target, cmd->command);
+  
+  if (strcmp(cmd->target, "barrel1") == 0) {    
+    
+    Serial.println("Starting processing command");
+    
+    if (strcmp(cmd->command, "fill") == 0 ) {
+        barrel->Fill();
+    } else    
+    if (strcmp(cmd->command, "empty") == 0){
+        barrel->Empty();
+    }
+    if (strcmp(cmd->command, "block") == 0){
+        barrel->Block();
+    }    
+
+    delete cmd;
+
+    Serial.println("Finish processing command");
+  }
 }
 
 void reconnect() {
@@ -99,9 +350,9 @@ void reconnect() {
     if (client.connect("ESP8266Client", mqtt_user, mqtt_password)) {
       Serial.println("connected");
       // Once connected, publish an announcement...
-      client.publish("outTopic", "hello world");
+      client.publish("start", "{\"module\":\"barrel_dev\", \"status\":\"connected\"}");
       // ... and resubscribe
-      client.subscribe("inTopic");
+      client.subscribe("michael/fazenda/#");
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -111,6 +362,7 @@ void reconnect() {
     }
   }
 }
+
 void loop() {
 //delay(200);
 //return;
@@ -119,13 +371,48 @@ void loop() {
   }
   client.loop();
 
+
   long now = millis();
-  if (now - lastMsg > 2000) {
-    lastMsg = now;
+  if (now - lastMsg > 60000) {
+    /*
+    if (isLow)
+      digitalWrite(BUILTIN_LED, LOW);
+    else
+      digitalWrite(BUILTIN_LED, HIGH);
+
+    isLow = !isLow;
+    
     ++value;
     snprintf (msg, 75, "hello world #%ld", value);
     Serial.print("Publish message: ");
     Serial.println(msg);
-    client.publish("outTopic", msg);
+    */
+
+    Serial.print("Temperature for the device 1 (index 0) is: ");
+    Serial.println(thermometer->getTemperature());  
+    Serial.printf("Barrel state: %s", barrel->toJsonString().c_str());
+    Serial.println();
+    
+    //const char * payload = (thermometer->toJsonString()).c_str();
+    
+    HTTPClient http;
+    http.begin("http://smart.no-troubles.com/Command/SetSensorValue");    
+    //http.begin("http://192.168.10.109/SmartHome/Command/SetSensorValue");    
+    http.addHeader("Content-type", "application/json");
+    int httpCode = http.POST(thermometer->toJsonString());
+    
+    if (httpCode != HTTP_CODE_OK) {
+      Serial.printf("[HTTP] Request failed, error: %d %s\n", httpCode, http.errorToString(httpCode).c_str());      
+    }
+    // sending to mqtt
+    //client.publish("sensor", (thermometer->toJsonString()).c_str());
+    //client.publish("sensorvalue", (barrel->toJsonString()).c_str());
+
+    httpCode = http.POST(barrel->toJsonString());
+    if (httpCode != HTTP_CODE_OK) {
+      Serial.printf("[HTTP] Request failed, error: %d %s\n", httpCode, http.errorToString(httpCode).c_str());      
+    }
+    
+    lastMsg = now;
   }
 }
