@@ -8,7 +8,11 @@
 
     <div class="panel-group" id="accordion">
         <div class="panel panel-primary">
-            <div class="panel-heading"><h4>@Model.DisplayName </h4></div>
+            <div class="panel-heading row">
+                <div class="col-md-11 col-xs-11 col-sm-11"><h4>@Model.DisplayName </h4></div>
+                @*<div class="col-md-1 col-xs-1 col-sm-1 text-right"><span class="glyphicon glyphicon-log-out" style="padding-top: 10px; cursor:pointer" onclick="logoff()"></span></div>*@
+            </div>
+            
         </div>
 
         @{
@@ -19,6 +23,7 @@
                         <h4 class="panel-title">
                             <a name="@s.Name" data-toggle="collapse" data-parent="#accordion" href="#@s.ClientId">@s.DisplayName</a>                                                                                        
                         </h4>
+                        
                     </div>
                     <div id="@s.ClientId" class="panel-collapse collapse">
                         <div class="panel-body">
@@ -52,7 +57,7 @@
 
             $("#msg").text("Connected to MQTT server");
             //client.subscribe("sensor/root/#");
-            client.subscribe("testingsensors");
+            client.subscribe("sensorvalue");
         }
 
         function doFail(e) {
@@ -68,7 +73,7 @@
                 //console.log("onConnectionLost:" + responseObject.errorMessage);
                 $("#msg").text("Connection lost");
             }
-            
+
             reconnect();
         }
 
@@ -92,7 +97,7 @@
         }
 
         // called when a message arrives
-        function onMessageArrived(message) {            
+        function onMessageArrived(message) {
             //debugger;
             var dest = message.destinationName;
             var ctrl = dest.replace(/\//g, "_")
@@ -219,5 +224,30 @@
             });
 
         }
+
+        function logoff()
+        {
+            //debugger;
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("LogOff", "Account")',
+                cache: false,
+                beforeSend: function () {
+                    //$("#mbbusy").show();
+                },
+                complete: function () {
+                    //$("#mbbusy").hide();
+                },
+
+                success: function (data) {
+                    //debugger;
+                },
+                error: function (err) {
+                    //debugger;
+                }
+            });
+
+        }
+
     </script>
 }

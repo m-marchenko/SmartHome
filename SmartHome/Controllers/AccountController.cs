@@ -65,6 +65,14 @@ namespace SmartHome.Controllers
             return View(model);
         }
 
+        [HttpPost]
+        //[ValidateAntiForgeryToken]
+        public ActionResult LogOff()
+        {
+            AuthenticationManager.SignOut(new AuthenticationProperties() {ExpiresUtc = DateTime.UtcNow }, DefaultAuthenticationTypes.ApplicationCookie);
+            //Session.Abandon();
+            return RedirectToAction("Index", "Account");
+        }
 
         private IAuthenticationManager AuthenticationManager
         {

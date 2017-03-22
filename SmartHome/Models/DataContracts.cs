@@ -209,6 +209,14 @@ namespace SmartHome.Models.DataContracts
         }
     }
 
+    public class StateSensor : SensorBase
+    {
+        public StateSensor()
+        {
+            SensorType = SensorType.State;
+        }
+    }
+
     [XmlInclude(typeof(House))]
     [XmlInclude(typeof(Garden))]
     [XmlInclude(typeof(Greenhouse))]
@@ -217,6 +225,7 @@ namespace SmartHome.Models.DataContracts
     [XmlInclude(typeof(TemperatureSensor))]
     [XmlInclude(typeof(PressureSensor))]
     [XmlInclude(typeof(LevelSensor))]
+    [XmlInclude(typeof(StateSensor))]
     public class RootUnit : CompositeObjectBase
     {
 

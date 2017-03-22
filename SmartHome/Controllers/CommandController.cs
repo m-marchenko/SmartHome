@@ -2,6 +2,7 @@
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Newtonsoft.Json;
+using SmartHome.App_Start;
 using SmartHome.Models;
 using SmartHome.Models.DataContracts;
 using System;
@@ -21,7 +22,8 @@ namespace SmartHome.Controllers
 {
     public class CommandController : Controller
     {
-        //private IRootObject _root;
+        
+        private static UserConfiguration _config = (UserConfiguration)ConfigurationManager.GetSection("UserConfiguration");
 
         private RootUnit _root;
 
@@ -118,12 +120,24 @@ namespace SmartHome.Controllers
             return result;
         }
 
+        //[AllowAnonymous]
         [HttpPost]
         public void SetSensorValue(string sensorId, string val)
         {
             _logger.DebugFormat("Start setting sensor {0} value to {1}", sensorId, val);
 
-            var sensor = _root.FindSensor(sensorId);
+            SensorBase sensor = null;
+
+            if (_root == null)  // прилетело значение от датчика, поэтому user не определен. Пока считается, что у датчиков id уникальный, поэтому будем искать во всей куче
+            {   
+                if (_config != null && _config.Users.Any())
+                {
+                    sensor = _config.Users.SelectMany(u => u.Profiles).Select(r => r.FindSensor(sensorId)).Where(s => s != null).FirstOrDefault();
+                }
+            }
+            else
+                sensor = _root.FindSensor(sensorId);
+
             if (sensor == null)
             {
                 _logger.DebugFormat("Sensor {0} not found", sensorId);
@@ -137,7 +151,7 @@ namespace SmartHome.Controllers
             {
                 //var msg = JsonConvert.SerializeObject(sensor);
                 var msg = JsonConvert.SerializeObject(new  { clientid = sensor.ClientId, display = sensor.DisplayName, value = sensor.Value, time = sensor.MeasureTime.Value.ToString("dd.MM HH:mm", new System.Globalization.CultureInfo("ru-RU")) });
-                _mqtt.Publish("testingsensors", Encoding.UTF8.GetBytes(msg));
+                _mqtt.Publish("sensorvalue", Encoding.UTF8.GetBytes(msg));
             }
 
             _logger.DebugFormat("Setting sensor {0} value to {1} successfully finished", sensorId, val);
