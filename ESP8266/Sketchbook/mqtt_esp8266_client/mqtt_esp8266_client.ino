@@ -35,7 +35,7 @@
 #define GPIO2 2
 #define BUILTIN_LED GPIO2
 
-#define DS18B20_PIN 2  // DS18B20 pin
+#define DS18B20_PIN 13  // DS18B20 pin
 #define TEMPERATURE_PRECISION 3
 #define DS18B20_ID  "TM0002"
 
@@ -156,9 +156,9 @@ class CLevelSensor{
 };
 
 #define VALVE_PIN_TOP     5
-#define VALVE_STATE_PIN_TOP 12
+#define VALVE_STATE_PIN_TOP 4
 #define VALVE_PIN_BOTTOM  14
-#define VALVE_STATE_PIN_BOTTOM 13
+#define VALVE_STATE_PIN_BOTTOM 12
 
 #define ISBLOCKED 0
 #define ISFILLING 1
@@ -277,6 +277,7 @@ CBarrel *barrel;
 
 void setup() {
   pinMode(BUILTIN_LED, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
+  digitalWrite(BUILTIN_LED, HIGH);
   Serial.begin(9600);
   setup_wifi();
   client.setServer(mqtt_server, 16425);
@@ -309,6 +310,20 @@ void setup_wifi() {
   Serial.println(WiFi.localIP());
 }
 
+void post_message(String message) {
+
+    HTTPClient http;
+    http.begin("http://smart.no-troubles.com/Command/SetSensorValue");    
+    //http.begin("http://192.168.10.109/SmartHome/Command/SetSensorValue");    
+    http.addHeader("Content-type", "application/json");
+    int httpCode = http.POST(message);
+    
+    if (httpCode != HTTP_CODE_OK) {
+      Serial.printf("[HTTP] Request failed, error: %d %s\n", httpCode, http.errorToString(httpCode).c_str());      
+    }
+  
+ }
+
 void callback(char* topic, byte* payload, unsigned int length) {
   Serial.print("Message arrived [");
   Serial.print(topic);
@@ -338,6 +353,8 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
     delete cmd;
 
+    post_message(barrel->toJsonString());
+    
     Serial.println("Finish processing command");
   }
 }
@@ -353,7 +370,9 @@ void reconnect() {
       client.publish("start", "{\"module\":\"barrel_dev\", \"status\":\"connected\"}");
       // ... and resubscribe
       client.subscribe("michael/fazenda/#");
+      digitalWrite(BUILTIN_LED, LOW);
     } else {
+      digitalWrite(BUILTIN_LED, HIGH);
       Serial.print("failed, rc=");
       Serial.print(client.state());
       Serial.println(" try again in 5 seconds");
@@ -366,6 +385,11 @@ void reconnect() {
 void loop() {
 //delay(200);
 //return;
+
+  if (WiFi.status() != WL_CONNECTED) {
+    setup_wifi();
+  }
+  
   if (!client.connected()) {
     reconnect();
   }
@@ -394,7 +418,7 @@ void loop() {
     Serial.println();
     
     //const char * payload = (thermometer->toJsonString()).c_str();
-    
+/*    
     HTTPClient http;
     http.begin("http://smart.no-troubles.com/Command/SetSensorValue");    
     //http.begin("http://192.168.10.109/SmartHome/Command/SetSensorValue");    
@@ -412,6 +436,10 @@ void loop() {
     if (httpCode != HTTP_CODE_OK) {
       Serial.printf("[HTTP] Request failed, error: %d %s\n", httpCode, http.errorToString(httpCode).c_str());      
     }
+*/
+    post_message(thermometer->toJsonString());
+
+    post_message(barrel->toJsonString());
     
     lastMsg = now;
   }
