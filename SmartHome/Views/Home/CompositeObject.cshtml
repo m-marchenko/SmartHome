@@ -4,71 +4,44 @@
 // ViewBag.Title = "Home Page";
 }
 
-    <div id="@Model.Name">
-    @if (Model.Units.Count > 0)
-    {
-        <div class="tabbable tabs-top">
-            <ul class="nav nav-tabs">
+    <div id="@Model.Name" class="panel-group">
+
+        <div class="panel panel-default">
+            <div class="panel panel-heading">
+                <a href="#L_@Model.ClientId" data-toggle="collapse">@Model.DisplayName</a>
+            </div>
+            @if (Model.Sensors != null && Model.Sensors.Any())
+            {
+                <div id='sensorsU_@Model.ClientId' class="panel panel-body">
+                    @Html.Partial("Sensors", Model.Sensors)
+                </div>
+            }
+
+
+            @if (Model.Commands != null && Model.Commands.Any())
+            {
+                <div class="panel panel-footer">
+                    @foreach (var cmd in Model.Commands)
+                {
+                        <button type="button" name="@Model.ClientId" id="@cmd.Id" class="btn btn-primary">@cmd.DisplayName</button>
+                    }
+                </div>
+                @*<div class="divider">
+                    <hr />
+                </div>*@
+
+            }
+
+            <div id="L_@Model.ClientId" class="collapse">
                 @foreach (var cobj in Model.Units)
                 {
-                    <li>
-                        <a name="@Model.Name" data-toggle="tab" href="#@cobj.ClientId">@cobj.DisplayName</a>
-
-                    </li>
-                }
-
-                @if (Model.Sensors.Count > 0)
-                {
-                    <li class="active">                        
-                        <a name='@Model.Name' data-toggle="tab" href="#sensors_@Model.ClientId">Датчики</a>             
-                    </li>
-                }
-            </ul>
-
-            <div class="tab-content">
-                @foreach (var cobj in Model.Units)
-                {
-                    <div id="@cobj.ClientId" class="tab-pane fade">
+                    <div id="@cobj.ClientId" class="panel panel-body">
                         @Html.Partial("CompositeObject", cobj)
                     </div>
                 }
-                @if (Model.Sensors.Count > 0)
-                {
-                    
-                    <div id='sensors_@Model.ClientId' class="tab-pane fade in active">    
-                        <div id='sensorsU_@Model.ClientId'>
-                            @*<h4>@Model.DisplayName - показания датчиков</h4>*@
-                            @Html.Partial("Sensors", Model.Sensors)
-                        </div>
-                    </div>
-                }
-
-
             </div>
         </div>
-    }
-    else
-    {
-        @*<h4>@Model.DisplayName - показания датчиков</h4>*@
 
-        <div id='sensorsU_@Model.ClientId' >
-            @Html.Partial("Sensors", Model.Sensors)
-        </div>
-    }
-
-    @if (Model.Commands.Count > 0)
-    {
-        <div>
-            @foreach (var cmd in Model.Commands)
-            {
-                <button type="button" name="@Model.ClientId" id="@cmd.Id" class="btn btn-primary">@cmd.DisplayName</button>
-            }
-        </div>
-        <div class="divider">
-                <hr />
-        </div>
-
-    }
 </div>
 
 
