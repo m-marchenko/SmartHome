@@ -258,8 +258,12 @@ class CJsonCommandParser {
 
 // Update these with values suitable for your network.
 
-const char* ssid = "WatchOut!";
-const char* password = "djctvmgjgeufq";
+//const char* ssid = "WatchOut!";
+//const char* password = "djctvmgjgeufq";
+
+const char* ssid = "MegaFon_MR100-1";
+const char* password = "95955870";
+
 
 //const char* mqtt_server = "broker.mqtt-dashboard.com";
 const char * mqtt_server = "m10.cloudmqtt.com";
