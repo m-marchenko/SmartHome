@@ -13,6 +13,7 @@
                 <th>Параметр</th>
                 <th>Значение</th>
                 <th>Время</th>
+                <th>&nbsp;</th>
                 @*<th><div class="text-right"><a href="#" class="btn btn-xs btn-info" onclick="refreshObject('@Model[0].Parent.ClientId')"><span class="glyphicon glyphicon-refresh"></span></a></div></th>*@
             </tr>
         </thead>
@@ -29,9 +30,17 @@
                             {
                                 @d.MeasureTime.Value.ToString("dd.MM HH:mm", new System.Globalization.CultureInfo("ru-RU"));
                             }
+                            else
+                            {
+                                var history = d.History.FirstOrDefault();
+                                if (history != null)
+                                {
+                                    @history.MeasureTime.ToString("dd.MM HH:mm", new System.Globalization.CultureInfo("ru-RU"));
+                                }
+                            }
                         </nobr>
                     </td>
-                    @*<td>&nbsp;</td>*@
+                    <td>&nbsp;</td>
                 </tr>
             }
         </tbody>
