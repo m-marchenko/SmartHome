@@ -17,16 +17,17 @@ namespace SmartHome.Models
     {
         public SmartHomeUser()
         {
-            
+            Profiles = new List<RootUnit>();
         }
-        public SmartHomeUser(string id, string name)
+        public SmartHomeUser(string id, string name) : this()
         {
             Id = id;
             UserName = name;
         }
 
-        [XmlArrayItem(ElementName = "RootUnit")]
-        public List<RootUnit> Profiles { get; set; }
+        //[XmlArrayItem(ElementName = "RootUnit")]
+        [XmlIgnore]
+        public List<RootUnit> Profiles { get; private set; }
 
         [XmlAttribute(AttributeName = "default")]
         public string DefaultProfileName { get; set; }
@@ -132,14 +133,26 @@ namespace SmartHome.Models
 
         public Task<T> FindByIdAsync(string userId)
         {
-            return Task.FromResult<T>(_config.Users.OfType<T>().Where(u => u.Id == userId).FirstOrDefault());
+            var user = _config.Users.OfType<T>().Where(u => u.Id == userId).FirstOrDefault();
+
+            if (user != null)
+            {
+                user.Profiles.AddRange(_config.Profiles.Where(p => p.Name == user.DefaultProfileName));
+            }
+
+            return Task.FromResult<T>(user);
         }
 
         public Task<T> FindByNameAsync(string userName)
         {
-            return Task.FromResult<T>(_config.Users.OfType<T>().Where(u => u.UserName == userName).FirstOrDefault());
+            var user = _config.Users.OfType<T>().Where(u => u.UserName == userName).FirstOrDefault();
 
+            if (user != null)
+            {
+                user.Profiles.AddRange(_config.Profiles.Where(p => p.Name == user.DefaultProfileName));
+            }
 
+            return Task.FromResult<T>(user);
         }
 
         public Task UpdateAsync(T user)

@@ -40,7 +40,7 @@
 </div>
 
 @section scripts {
-    <script type="text/javascript">
+<script type="text/javascript">
 
         // Create a client instance
         //client = new Paho.MQTT.Client("host", port, "client_id");
@@ -194,6 +194,36 @@
 
             }
         });*@
+
+        $("#history").on('show.bs.modal', function () {
+                alert('The modal is about to be shown. @Url.Action("History")');
+
+            $.ajax({
+                type: 'GET',
+                url: '@Url.Action("History")',
+                cache: false,
+                beforeSend: function () {
+                    //$("#mbbusy").show();
+                    alert('Before sending request to @Url.Action("History")');
+                },
+                complete: function () {
+                    //$("#mbbusy").hide();
+                },
+
+                success: function (data) {
+                    //debugger;
+                    alert(data);
+                    // заменяем содержимое присланным частичным представлением
+                    $('.modal-body').replaceWith(data);
+                    //alert($(".mbselect").length);
+                },
+                error: function (err) {
+                    alert(err);
+                    //debugger;
+                }
+            });
+
+        });
     });
 
         function refreshObject(clientid) {
@@ -249,5 +279,40 @@
 
         }
 
-    </script>
+        function showHistory(clientId) {
+            //$("#history").modal();
+
+            var url = '@Url.Action("History", "Home")/' + clientId;
+            alert(url);
+
+            //alert(clientId);
+
+            $.ajax({
+                type: 'GET',
+                url: url,
+                cache: false,
+                beforeSend: function () {
+                    //$("#mbbusy").show();
+                    alert('History Request is about to be sent');
+                },
+                complete: function () {
+                    //$("#mbbusy").hide();
+                },
+
+                success: function (data) {
+                    debugger;
+                    alert(data);
+                    // заменяем содержимое присланным частичным представлением
+                    $('.modal-body').replaceWith(data);
+                    //alert($(".mbselect").length);
+                },
+                error: function (jqXHR, textStatus, err) {
+                    debugger;
+                    alert(err);
+                    
+                }
+            });
+        }
+
+</script>
 }

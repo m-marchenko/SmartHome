@@ -15,6 +15,9 @@ namespace SmartHome.App_Start
     {
         [XmlArrayItem(ElementName = "User")]
         public List<SmartHomeUser> Users { get; set; }
+
+        [XmlArrayItem(ElementName = "RootUnit")]
+        public List<RootUnit> Profiles { get; set; }
     }
 
     public class UserConfigHandler : IConfigurationSectionHandler

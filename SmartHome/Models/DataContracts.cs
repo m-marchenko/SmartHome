@@ -43,7 +43,7 @@ namespace SmartHome.Models.DataContracts
 
         [JsonIgnore]
         [XmlIgnore]
-        public CompositeObjectBase Parent { get; set; }
+        public CompositeObject Parent { get; set; }
 
         [XmlIgnore]
         public string ClientId
@@ -65,19 +65,19 @@ namespace SmartHome.Models.DataContracts
     }
 
     [Serializable]
-    public abstract class CompositeObjectBase : GenericObjectBase
+    public class CompositeObject : GenericObjectBase
     {
         //protected readonly ICollection<IGenericObject> _all = new List<IGenericObject>();
 
-        protected CompositeObjectBase() : base()
+        protected CompositeObject() : base()
         {
         }
 
-        protected CompositeObjectBase(string id, string name, string displayName) : base(id, name, displayName)
+        protected CompositeObject(string id, string name, string displayName) : base(id, name, displayName)
         {
         }
 
-        public List<CompositeObjectBase> Units { get; set; }
+        public List<CompositeObject> Units { get; set; }
 
         public List<SensorBase> Sensors { get; set; }
 
@@ -125,7 +125,7 @@ namespace SmartHome.Models.DataContracts
             return result;
         }
 
-        public CompositeObjectBase FindUnit(string unitId)
+        public CompositeObject FindUnit(string unitId)
         {
             if (Units == null)
                 return null;
@@ -227,40 +227,40 @@ namespace SmartHome.Models.DataContracts
         }
     }
 
-    [XmlInclude(typeof(House))]
-    [XmlInclude(typeof(Garden))]
-    [XmlInclude(typeof(Greenhouse))]
-    [XmlInclude(typeof(Barrel))]
+    //[XmlInclude(typeof(House))]
+    //[XmlInclude(typeof(Garden))]
+    //[XmlInclude(typeof(Greenhouse))]
+    //[XmlInclude(typeof(Barrel))]
     [XmlInclude(typeof(Command))]
     [XmlInclude(typeof(TemperatureSensor))]
     [XmlInclude(typeof(PressureSensor))]
     [XmlInclude(typeof(LevelSensor))]
     [XmlInclude(typeof(StateSensor))]
-    public class RootUnit : CompositeObjectBase
+    public class RootUnit : CompositeObject
     {
 
     }
 
-    public class House : CompositeObjectBase
-    {
+    //public class House : CompositeObject
+    //{
 
-    }
+    //}
 
-    public class Garden : CompositeObjectBase
-    {
+    //public class Garden : CompositeObject
+    //{
 
-    }
+    //}
 
 
-    public class Greenhouse : CompositeObjectBase
-    {
+    //public class Greenhouse : CompositeObject
+    //{
 
-    }
+    //}
 
-    public class Barrel : CompositeObjectBase
-    {
+    //public class Barrel : CompositeObject
+    //{
 
-    }
+    //}
     public class Command : GenericObjectBase
     {
 
