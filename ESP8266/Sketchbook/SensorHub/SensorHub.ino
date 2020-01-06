@@ -31,16 +31,26 @@ void setup() {
   setup_wifi(ssid, password);
   
   setup_radio(radio, _pipe);
-  
+
+  pinMode(GPIO2, OUTPUT);
+  pinMode(GPIO5, OUTPUT);   
+  digitalWrite(GPIO5, HIGH);
+  digitalWrite(GPIO2, HIGH);
 }
 
 void loop() {
 
   if (WiFi.status() != WL_CONNECTED) {
+    digitalWrite(GPIO5, HIGH);
     setup_wifi(ssid, password);
+  }
+  else {
+    digitalWrite(GPIO5, LOW);
   }
     if(radio.available())
     {
+      digitalWrite(GPIO2, LOW);
+      
       uint8_t len = radio.getDynamicPayloadSize();      
       radio.read((void *)&packet, len);      
       
@@ -77,6 +87,8 @@ void loop() {
       Serial.println(post_string);
       Serial.println();
       //delay(1000);
+
+      digitalWrite(GPIO2, HIGH);
     }  
 
 
