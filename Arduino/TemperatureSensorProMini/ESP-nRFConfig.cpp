@@ -28,4 +28,6 @@ void setup_radio_listener(RF24& rad, uint64_t pipe)
 void setup_radio_transmitter(RF24& rad, uint64_t pipe)
 {
 	setup_radio_params(rad);
+  rad.openWritingPipe(pipe);
+  Serial.println("Radio transmitter initialized");
 }
