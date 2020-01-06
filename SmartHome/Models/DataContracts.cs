@@ -151,7 +151,8 @@ namespace SmartHome.Models.DataContracts
     {
         public SensorBase()
         {
-
+            // месяц при 5-минутном интервале
+            History = new Queue<SensorHistoryEntry>(12*24*31);
         }
 
         /// <summary>
@@ -164,8 +165,17 @@ namespace SmartHome.Models.DataContracts
         public string Value { get; set; }
 
         public DateTime? MeasureTime { get; set; }
+
+        [XmlIgnore]
+        public Queue<SensorHistoryEntry> History { get; protected set; }
     }
 
+    public class SensorHistoryEntry
+    {
+        public string Value { get; set; }
+
+        public DateTime MeasureTime { get; set; }
+    }
 
 
     #endregion

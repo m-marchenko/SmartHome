@@ -154,6 +154,8 @@ namespace SmartHome.Controllers
                 _mqtt.Publish("sensorvalue", Encoding.UTF8.GetBytes(msg));
             }
 
+            sensor.History.Enqueue(new SensorHistoryEntry() { Value = val, MeasureTime = sensor.MeasureTime.Value });
+
             _logger.DebugFormat("Setting sensor {0} value to {1} successfully finished", sensorId, val);
         }
 
