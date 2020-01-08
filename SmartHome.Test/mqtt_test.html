@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>
+            Testing MQTT client
+        </title>	
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>		
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js" type="text/javascript"></script>
+	</head>
+	
+	<body>
+		<div class="container-fluid">
+		  <h2>Мониторинг температуры</h2>
+		  <p><span>Балкон</span>&nbsp;<span id="TM0001"></span></p>
+		  <p><span>Кухня</span>&nbsp;<span id="TM0004"></span></p>
+		  <p id="msg"></p>
+		</div>	
+	</body>
+	
+    <script type="text/javascript">
+
+        // Create a client instance        
+        client = new Paho.MQTT.Client("m10.cloudmqtt.com", 36425, "web1_" + parseInt(Math.random() * 100, 10) );        
+        reconnect();
+
+        // called when the client connects
+        function onConnect() {
+            // Once a connection has been made, make a subscription and send a message.
+            //debugger;
+            $("#msg").text("Connected to MQTT server");            
+            client.subscribe("root/sensors");
+        }
+
+        function doFail(e) {
+            //console.log(e);
+            //debugger;
+            $("#msg").text("Shit happens - " + e.errorMessage);
+			
+			setTimeout (() => { reconnect(); }, 2000);
+        }
+
+        // called when the client loses its connection
+        function onConnectionLost(responseObject) {
+            //debugger;
+            //if (responseObject.errorCode !== 0) {
+                //console.log("onConnectionLost:" + responseObject.errorMessage);
+                $("#msg").text("Connection lost");
+            //}
+
+            setTimeout (() => { reconnect(); }, 2000);
+        }
+
+        function reconnect() {
+
+            // set callback handlers
+            client.onConnectionLost = onConnectionLost;
+            client.onMessageArrived = onMessageArrived;
+            var options = {
+                cleanSession: false,
+                keepAliveInterval: 6000,
+                useSSL: true,
+                userName: "quefkobd",
+                password: "524rVRkbylHl",
+                onSuccess: onConnect,
+                onFailure: doFail
+            }
+
+            // connect the client
+            client.connect(options);
+        }
+
+        // called when a message arrives
+        function onMessageArrived(message) {
+            //debugger;
+            var dest = message.destinationName;
+            var ctrl = dest.replace(/\//g, "_")
+
+            var msg = JSON.parse(message.payloadString);
+
+            $("#" + msg.sensorId).text(msg.val + ' ' + getDateTime());
+            //$("#" + msg.clientid).replaceWith("<tr id='" + msg.clientid + "'><td>"+ msg.display + "</td><td>" + msg.value + "</td><td>" + msg.time + "</td></tr>");
+
+        }
+
+		function getDateTime() {
+			var now     = new Date(); 
+			var year    = now.getFullYear();
+			var month   = now.getMonth()+1; 
+			var day     = now.getDate();
+			var hour    = now.getHours();
+			var minute  = now.getMinutes();
+			var second  = now.getSeconds(); 
+			if(month.toString().length == 1) {
+				 month = '0'+month;
+			}
+			if(day.toString().length == 1) {
+				 day = '0'+day;
+			}   
+			if(hour.toString().length == 1) {
+				 hour = '0'+hour;
+			}
+			if(minute.toString().length == 1) {
+				 minute = '0'+minute;
+			}
+			if(second.toString().length == 1) {
+				 second = '0'+second;
+			}   
+			var dateTime = hour + ':' + minute + ':' + second + "  " + day + '.' + month + '.' + year;   
+			 return dateTime;
+    }
+		
+    </script>	
+</html>
